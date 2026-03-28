@@ -7,9 +7,11 @@ namespace App\Tests\Unit;
 use App\Domain\Character\Enum\StatType;
 use App\Domain\Skill\Entity\Skill;
 use App\Domain\Skill\Entity\SkillStatBonus;
+use App\Domain\User\Enum\CharacterRace;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Uuid;
 
+/** Unit tests for the Skill entity including new fields for types, cooldowns, and race/profession links. */
 class SkillEntityTest extends TestCase
 {
     public function testCreationGeneratesUuid(): void
@@ -97,8 +99,113 @@ class SkillEntityTest extends TestCase
             ->setSlug('fireball')
             ->setDescription('Fire spell')
             ->setIcon('icon.png')
-            ->setRequiredLevel(3);
+            ->setRequiredLevel(3)
+            ->setSkillType('active')
+            ->setDuration(30)
+            ->setCooldown(60)
+            ->setTier(1)
+            ->setIsUniversal(true)
+            ->setIsRaceSkill(false)
+            ->setRaceRestriction(CharacterRace::Human);
 
         $this->assertSame($skill, $result);
+    }
+
+    /** Test default values for the new skill type field. */
+    public function testDefaultSkillType(): void
+    {
+        $skill = new Skill();
+
+        $this->assertSame('passive', $skill->getSkillType());
+    }
+
+    /** Test setting and getting the skill type. */
+    public function testSkillTypeSetterAndGetter(): void
+    {
+        $skill = new Skill();
+
+        $skill->setSkillType('active');
+        $this->assertSame('active', $skill->getSkillType());
+
+        $skill->setSkillType('passive');
+        $this->assertSame('passive', $skill->getSkillType());
+    }
+
+    /** Test duration field for active skills. */
+    public function testDurationField(): void
+    {
+        $skill = new Skill();
+
+        $this->assertNull($skill->getDuration());
+
+        $skill->setDuration(60);
+        $this->assertSame(60, $skill->getDuration());
+
+        $skill->setDuration(null);
+        $this->assertNull($skill->getDuration());
+    }
+
+    /** Test cooldown field for active skills. */
+    public function testCooldownField(): void
+    {
+        $skill = new Skill();
+
+        $this->assertNull($skill->getCooldown());
+
+        $skill->setCooldown(120);
+        $this->assertSame(120, $skill->getCooldown());
+
+        $skill->setCooldown(null);
+        $this->assertNull($skill->getCooldown());
+    }
+
+    /** Test race restriction enum field. */
+    public function testRaceRestrictionField(): void
+    {
+        $skill = new Skill();
+
+        $this->assertNull($skill->getRaceRestriction());
+
+        $skill->setRaceRestriction(CharacterRace::Orc);
+        $this->assertSame(CharacterRace::Orc, $skill->getRaceRestriction());
+
+        $skill->setRaceRestriction(null);
+        $this->assertNull($skill->getRaceRestriction());
+    }
+
+    /** Test tier field for profession skills. */
+    public function testTierField(): void
+    {
+        $skill = new Skill();
+
+        $this->assertNull($skill->getTier());
+
+        $skill->setTier(2);
+        $this->assertSame(2, $skill->getTier());
+
+        $skill->setTier(null);
+        $this->assertNull($skill->getTier());
+    }
+
+    /** Test default value and setter for the isUniversal flag. */
+    public function testIsUniversalField(): void
+    {
+        $skill = new Skill();
+
+        $this->assertFalse($skill->getIsUniversal());
+
+        $skill->setIsUniversal(true);
+        $this->assertTrue($skill->getIsUniversal());
+    }
+
+    /** Test default value and setter for the isRaceSkill flag. */
+    public function testIsRaceSkillField(): void
+    {
+        $skill = new Skill();
+
+        $this->assertFalse($skill->getIsRaceSkill());
+
+        $skill->setIsRaceSkill(true);
+        $this->assertTrue($skill->getIsRaceSkill());
     }
 }

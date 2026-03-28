@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Skill\Entity;
 
 use App\Domain\Media\Entity\MediaFile;
+use App\Domain\User\Enum\CharacterRace;
 use App\Infrastructure\Skill\Repository\SkillRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -15,10 +16,10 @@ use Symfony\Component\Uid\Uuid;
 /**
  * RPG skill definition that can be unlocked by characters.
  *
- * Domain layer (Skill bounded context). Each skill provides passive stat bonuses
+ * Domain layer (Skill bounded context). Each skill provides stat bonuses
  * (via SkillStatBonus one-to-many relationship) and has a minimum level requirement.
- * Skills are unlocked by users through scroll items or level-up rewards, tracked
- * via the UserSkill join entity.
+ * Skills can be passive (always active) or active (with duration and cooldown).
+ * They may be restricted to a specific race, linked to professions, or universal.
  *
  * Managed exclusively via the Sonata admin panel. Game designers configure skills
  * and their stat bonuses to balance the RPG progression system.
@@ -52,6 +53,34 @@ class Skill
 
     #[ORM\Column(type: 'integer', options: ['default' => 1])]
     private int $requiredLevel = 1;
+
+    /** Skill type: 'passive' (always active) or 'active' (has duration/cooldown) */
+    #[ORM\Column(type: 'string', length: 20, options: ['default' => 'passive'])]
+    private string $skillType = 'passive';
+
+    /** Duration in minutes for active skills (null for passive) */
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $duration = null;
+
+    /** Cooldown in minutes for active skills (null for passive) */
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $cooldown = null;
+
+    /** Race restriction: if set, only characters of this race can use this skill */
+    #[ORM\Column(type: 'string', length: 20, nullable: true, enumType: CharacterRace::class)]
+    private ?CharacterRace $raceRestriction = null;
+
+    /** Skill tier: 1, 2, or 3 for profession skills; null for race/universal skills */
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $tier = null;
+
+    /** Whether this skill is available to all players regardless of race or profession */
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isUniversal = false;
+
+    /** Whether this is a race-specific passive skill */
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isRaceSkill = false;
 
     /** @var Collection<int, SkillStatBonus> */
     #[ORM\OneToMany(targetEntity: SkillStatBonus::class, mappedBy: 'skill', cascade: ['persist', 'remove'])]
@@ -136,6 +165,90 @@ class Skill
     public function setRequiredLevel(int $requiredLevel): self
     {
         $this->requiredLevel = $requiredLevel;
+
+        return $this;
+    }
+
+    public function getSkillType(): string
+    {
+        return $this->skillType;
+    }
+
+    public function setSkillType(string $skillType): self
+    {
+        $this->skillType = $skillType;
+
+        return $this;
+    }
+
+    public function getDuration(): ?int
+    {
+        return $this->duration;
+    }
+
+    public function setDuration(?int $duration): self
+    {
+        $this->duration = $duration;
+
+        return $this;
+    }
+
+    public function getCooldown(): ?int
+    {
+        return $this->cooldown;
+    }
+
+    public function setCooldown(?int $cooldown): self
+    {
+        $this->cooldown = $cooldown;
+
+        return $this;
+    }
+
+    public function getRaceRestriction(): ?CharacterRace
+    {
+        return $this->raceRestriction;
+    }
+
+    public function setRaceRestriction(?CharacterRace $raceRestriction): self
+    {
+        $this->raceRestriction = $raceRestriction;
+
+        return $this;
+    }
+
+    public function getTier(): ?int
+    {
+        return $this->tier;
+    }
+
+    public function setTier(?int $tier): self
+    {
+        $this->tier = $tier;
+
+        return $this;
+    }
+
+    public function getIsUniversal(): bool
+    {
+        return $this->isUniversal;
+    }
+
+    public function setIsUniversal(bool $isUniversal): self
+    {
+        $this->isUniversal = $isUniversal;
+
+        return $this;
+    }
+
+    public function getIsRaceSkill(): bool
+    {
+        return $this->isRaceSkill;
+    }
+
+    public function setIsRaceSkill(bool $isRaceSkill): self
+    {
+        $this->isRaceSkill = $isRaceSkill;
 
         return $this;
     }

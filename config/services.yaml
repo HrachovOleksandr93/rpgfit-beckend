@@ -140,6 +140,11 @@ services:
         tags:
             - { name: sonata.admin, model_class: App\Domain\Activity\Entity\ActivityType, manager_type: orm, label: Activity Types, group: professions }
 
+    admin.profession_skill:
+        class: App\Admin\ProfessionSkillAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Activity\Entity\ProfessionSkill, manager_type: orm, label: Profession Skills, group: professions }
+
     admin.user_profession:
         class: App\Admin\UserProfessionAdmin
         tags:
