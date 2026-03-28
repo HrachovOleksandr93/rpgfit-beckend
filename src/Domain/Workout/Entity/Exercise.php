@@ -31,6 +31,7 @@ use Symfony\Component\Uid\Uuid;
 #[ORM\Index(name: 'idx_exercise_primary_muscle', columns: ['primary_muscle'])]
 #[ORM\Index(name: 'idx_exercise_difficulty', columns: ['difficulty'])]
 #[ORM\Index(name: 'idx_exercise_priority', columns: ['priority'])]
+#[ORM\Index(name: 'idx_exercise_activity_category', columns: ['activity_category'])]
 class Exercise
 {
     #[ORM\Id]
@@ -88,6 +89,10 @@ class Exercise
     /** Default rest period between sets in seconds */
     #[ORM\Column(type: 'integer')]
     private int $defaultRestSeconds = 90;
+
+    /** Activity category slug (combat, running, swimming, etc.). Null means gym/strength. */
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    private ?string $activityCategory = null;
 
     public function __construct()
     {
@@ -277,6 +282,18 @@ class Exercise
     public function setDefaultRestSeconds(int $defaultRestSeconds): self
     {
         $this->defaultRestSeconds = $defaultRestSeconds;
+
+        return $this;
+    }
+
+    public function getActivityCategory(): ?string
+    {
+        return $this->activityCategory;
+    }
+
+    public function setActivityCategory(?string $activityCategory): self
+    {
+        $this->activityCategory = $activityCategory;
 
         return $this;
     }

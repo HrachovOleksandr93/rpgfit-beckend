@@ -14,5 +14,13 @@ enum Equipment: string
     case Bodyweight = 'bodyweight';
     case Kettlebell = 'kettlebell';
     case ResistanceBand = 'resistance_band';
-    case None = 'none';
+    case NoEquipment = 'no_equipment';
+    case Mat = 'mat';
+    case Pool = 'pool';
+    case Bike = 'bike';
+    case RowingMachine = 'rowing_machine';
+    case JumpRope = 'jump_rope';
+    case PunchingBag = 'punching_bag';
+    case Racquet = 'racquet';
+    case Outdoor = 'outdoor';
 }

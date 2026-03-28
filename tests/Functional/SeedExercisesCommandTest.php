@@ -42,7 +42,7 @@ class SeedExercisesCommandTest extends KernelTestCase
         $this->commandTester = new CommandTester($command);
     }
 
-    /** Verify the seeder creates exactly 108 exercises (shared exercises counted once under primary muscle). */
+    /** Verify the seeder creates exactly 216 exercises (108 gym + 108 activity-based). */
     public function testSeederCreatesCorrectExerciseCount(): void
     {
         $this->commandTester->execute([]);
@@ -50,7 +50,7 @@ class SeedExercisesCommandTest extends KernelTestCase
         $this->assertSame(0, $this->commandTester->getStatusCode());
 
         $exercises = $this->em->getRepository(Exercise::class)->findAll();
-        $this->assertCount(108, $exercises);
+        $this->assertCount(216, $exercises);
     }
 
     /** Verify the seeder creates exactly 6 split templates. */
@@ -77,7 +77,7 @@ class SeedExercisesCommandTest extends KernelTestCase
         $this->assertSame(0, $this->commandTester->getStatusCode());
 
         $exercises = $this->em->getRepository(Exercise::class)->findAll();
-        $this->assertCount(108, $exercises);
+        $this->assertCount(216, $exercises);
 
         $templates = $this->em->getRepository(SplitTemplate::class)->findAll();
         $this->assertCount(6, $templates);
@@ -107,18 +107,21 @@ class SeedExercisesCommandTest extends KernelTestCase
         $this->assertSame($templatesFirst, $templatesSecond);
     }
 
-    /** Verify exercises have correct muscle group distribution. */
+    /** Verify exercises have correct muscle group distribution (gym + activity-based). */
     public function testExerciseMuscleGroupDistribution(): void
     {
         $this->commandTester->execute([]);
 
+        // 14 gym + 4 activity (Jab-Cross Combo, Breaststroke Laps, Burpees, Surf Pop-Up Drill) = 18
         $chestExercises = $this->em->getRepository(Exercise::class)->findBy(['primaryMuscle' => 'chest']);
-        $this->assertCount(14, $chestExercises);
+        $this->assertCount(18, $chestExercises);
 
+        // 14 gym + 15 activity = 29
         $backExercises = $this->em->getRepository(Exercise::class)->findBy(['primaryMuscle' => 'back']);
-        $this->assertCount(14, $backExercises);
+        $this->assertCount(29, $backExercises);
 
+        // 12 gym + 17 activity = 29
         $coreExercises = $this->em->getRepository(Exercise::class)->findBy(['primaryMuscle' => 'core']);
-        $this->assertCount(12, $coreExercises);
+        $this->assertCount(29, $coreExercises);
     }
 }
