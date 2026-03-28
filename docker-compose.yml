@@ -1,0 +1,98 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: rpgfit-php
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+      - composer_cache:/root/.composer
+    environment:
+      DATABASE_URL: "mysql://rpgfit_user:rpgfit_password@mysql:3306/rpgfit?serverVersion=8.0&charset=utf8mb4"
+      REDIS_URL: "redis://redis:6379"
+      APP_ENV: "${APP_ENV:-dev}"
+      APP_SECRET: "${APP_SECRET:-change_me_in_production}"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm -t 2>/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - rpgfit
+
+  nginx:
+    image: nginx:alpine
+    container_name: rpgfit-nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-8080}:80"
+      - "${NGINX_SSL_PORT:-8443}:443"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      php:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "--no-check-certificate", "--header=Host: rpgfit.local", "https://localhost/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - rpgfit
+
+  mysql:
+    image: mysql:8.0
+    container_name: rpgfit-mysql
+    restart: unless-stopped
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:-root_password}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE:-rpgfit}"
+      MYSQL_USER: "${MYSQL_USER:-rpgfit_user}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:-rpgfit_password}"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root_password}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - rpgfit
+
+  redis:
+    image: redis:7-alpine
+    container_name: rpgfit-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6380}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - rpgfit
+
+volumes:
+  mysql_data:
+  redis_data:
+  composer_cache:
+
+networks:
+  rpgfit:
+    driver: bridge
