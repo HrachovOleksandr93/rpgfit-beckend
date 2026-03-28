@@ -19,6 +19,30 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Domain/Health/Entity'
                 prefix: 'App\Domain\Health\Entity'
                 alias: DomainHealth
+            DomainCharacter:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Domain/Character/Entity'
+                prefix: 'App\Domain\Character\Entity'
+                alias: DomainCharacter
+            DomainTraining:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Domain/Training/Entity'
+                prefix: 'App\Domain\Training\Entity'
+                alias: DomainTraining
+            DomainSkill:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Domain/Skill/Entity'
+                prefix: 'App\Domain\Skill\Entity'
+                alias: DomainSkill
+            DomainInventory:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Domain/Inventory/Entity'
+                prefix: 'App\Domain\Inventory\Entity'
+                alias: DomainInventory
         controller_resolver:
             auto_mapping: false
 

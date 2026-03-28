@@ -18,6 +18,17 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * API controller for user registration.
+ *
+ * Receives POST /api/registration with JSON body from the mobile app (iOS/Android).
+ * The registration form collects both account data (login, password) and RPG profile
+ * data (character race, workout preferences, fitness goals).
+ *
+ * Flow: Mobile App -> JSON POST -> validate DTO -> RegistrationService -> DB -> JSON response
+ *
+ * This is a public endpoint (no authentication required).
+ */
 class RegistrationController extends AbstractController
 {
     public function __construct(
@@ -26,6 +37,13 @@ class RegistrationController extends AbstractController
     ) {
     }
 
+    /**
+     * Register a new user from the mobile app.
+     *
+     * Accepts JSON with account credentials and RPG profile fields.
+     * Returns the created user data on success (HTTP 201), or validation
+     * errors (HTTP 422) / conflict if login/displayName already taken (HTTP 409).
+     */
     #[Route('/api/registration', name: 'api_registration', methods: ['POST'])]
     public function register(Request $request): JsonResponse
     {
@@ -38,6 +56,7 @@ class RegistrationController extends AbstractController
             );
         }
 
+        // Map raw JSON fields to a validated DTO, converting enum strings to PHP enums
         $dto = new RegistrationDTO();
         $dto->login = $data['login'] ?? '';
         $dto->password = $data['password'] ?? '';
@@ -49,7 +68,7 @@ class RegistrationController extends AbstractController
         $dto->desiredGoal = isset($data['desiredGoal']) ? DesiredGoal::tryFrom($data['desiredGoal']) : null;
         $dto->characterRace = isset($data['characterRace']) ? CharacterRace::tryFrom($data['characterRace']) : null;
 
-        // Validate DTO
+        // Validate DTO using Symfony Validator constraints defined on RegistrationDTO properties
         $violations = $this->validator->validate($dto);
 
         if (count($violations) > 0) {
@@ -64,6 +83,7 @@ class RegistrationController extends AbstractController
             );
         }
 
+        // Delegate to application service which checks uniqueness, hashes password, and persists
         try {
             $user = $this->registrationService->register($dto);
         } catch (ConflictHttpException $e) {
@@ -73,6 +93,7 @@ class RegistrationController extends AbstractController
             );
         }
 
+        // Return the newly created user profile back to the mobile app
         return $this->json(
             [
                 'id' => $user->getId()->toRfc4122(),

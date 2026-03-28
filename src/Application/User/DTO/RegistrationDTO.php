@@ -10,6 +10,17 @@ use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\WorkoutType;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/**
+ * Data Transfer Object for the user registration form.
+ *
+ * Maps the JSON body from the mobile app's registration screen to a validated PHP object.
+ * Validated by Symfony Validator constraints (NotBlank, Email, Length, Positive).
+ *
+ * Used by: RegistrationController (populates from JSON) -> RegistrationService (reads fields)
+ *
+ * Contains both account fields (login/password) and RPG onboarding fields
+ * (character race, workout type, activity level, desired goal).
+ */
 final class RegistrationDTO
 {
     #[Assert\NotBlank(message: 'Login is required.')]

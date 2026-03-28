@@ -13,6 +13,26 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
 
+/**
+ * A single raw health data measurement synced from the mobile app.
+ *
+ * Domain layer (Health bounded context). Each row stores one measurement originally
+ * recorded by Apple HealthKit (iOS) or Google Health Connect (Android).
+ *
+ * Data flow: Health Platform SDK -> Mobile App -> POST /api/health/sync -> HealthSyncService -> this entity
+ *
+ * Key fields:
+ * - externalUuid: the original record ID from HealthKit/Health Connect, used for deduplication
+ *   (unique per user to prevent the same measurement from being stored twice)
+ * - dataType: what is being measured (steps, heart rate, sleep, workout, etc.)
+ * - value + unit: the measurement (e.g. 5000 steps, 72 bpm, 45 minutes)
+ * - dateFrom/dateTo: the time range of the measurement
+ * - platform: which mobile OS the data came from (ios/android)
+ * - recordingMethod: whether the data was recorded automatically by sensors or manually by user
+ *
+ * Indexed by (user_id, data_type, date_from) for efficient daily aggregation queries
+ * used by HealthSummaryService.
+ */
 #[ORM\Entity(repositoryClass: HealthDataPointRepository::class)]
 #[ORM\Table(name: 'health_data_points')]
 #[ORM\UniqueConstraint(name: 'unique_user_external_uuid', columns: ['user_id', 'external_uuid'])]

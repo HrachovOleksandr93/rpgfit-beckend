@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Enum;
 
+/** User's daily activity level, selected during registration. Used to calibrate fitness goals and recommendations. */
 enum ActivityLevel: string
 {
     case Sedentary = 'sedentary';

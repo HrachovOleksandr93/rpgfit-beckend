@@ -11,6 +11,16 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * Doctrine repository for HealthDataPoint entities.
+ *
+ * Infrastructure layer (Health bounded context). Provides data access for health data
+ * points synced from Apple HealthKit / Google Health Connect via the mobile app.
+ *
+ * Key responsibilities:
+ * - Deduplication lookups by externalUuid (used by HealthSyncService)
+ * - Daily aggregation queries (used by HealthSummaryService)
+ * - Batch persistence with periodic flushing for performance
+ *
  * @extends ServiceEntityRepository<HealthDataPoint>
  */
 class HealthDataPointRepository extends ServiceEntityRepository
@@ -20,6 +30,7 @@ class HealthDataPointRepository extends ServiceEntityRepository
         parent::__construct($registry, HealthDataPoint::class);
     }
 
+    /** Find an existing data point by its external UUID (from HealthKit/Health Connect). Used for deduplication. */
     public function findByUserAndExternalUuid(User $user, string $externalUuid): ?HealthDataPoint
     {
         return $this->findOneBy([
@@ -52,9 +63,12 @@ class HealthDataPointRepository extends ServiceEntityRepository
     }
 
     /**
-     * Returns aggregated health data for a given date.
+     * Returns aggregated health data for a given date, grouped by data type.
      *
-     * @return array<string, mixed>
+     * Uses raw SQL for efficient aggregation (SUM, AVG, COUNT).
+     * Called by HealthSummaryService to build the daily dashboard summary.
+     *
+     * @return array<string, mixed> Each row has: type, total, average, count
      */
     public function getAggregatedByDate(User $user, \DateTimeImmutable $date): array
     {
@@ -87,6 +101,9 @@ class HealthDataPointRepository extends ServiceEntityRepository
     }
 
     /**
+     * Batch-save multiple health data points. Flushes every 50 entities for memory efficiency.
+     * Called by HealthSyncService when processing a sync batch from the mobile app.
+     *
      * @param HealthDataPoint[] $entities
      */
     public function batchSave(array $entities): void

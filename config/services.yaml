@@ -20,7 +20,78 @@ services:
             - '../src/Domain/User/Entity/'
             - '../src/Domain/User/Enum/'
             - '../src/Domain/User/ValueObject/'
+            - '../src/Domain/Character/Entity/'
+            - '../src/Domain/Character/Enum/'
+            - '../src/Domain/Training/Entity/'
+            - '../src/Domain/Skill/Entity/'
+            - '../src/Domain/Inventory/Entity/'
+            - '../src/Domain/Inventory/Enum/'
             - '../src/Kernel.php'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    admin.user:
+        class: App\Admin\UserAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\User\Entity\User, manager_type: orm, label: Users, group: users }
+
+    admin.character_stats:
+        class: App\Admin\CharacterStatsAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Character\Entity\CharacterStats, manager_type: orm, label: Character Stats, group: users }
+
+    admin.workout_category:
+        class: App\Admin\WorkoutCategoryAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Training\Entity\WorkoutCategory, manager_type: orm, label: Workout Categories, group: training }
+
+    admin.exercise_type:
+        class: App\Admin\ExerciseTypeAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Training\Entity\ExerciseType, manager_type: orm, label: Exercise Types, group: training }
+
+    admin.exercise_stat_reward:
+        class: App\Admin\ExerciseStatRewardAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Training\Entity\ExerciseStatReward, manager_type: orm, label: Stat Rewards, group: training }
+
+    admin.experience_log:
+        class: App\Admin\ExperienceLogAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Character\Entity\ExperienceLog, manager_type: orm, label: Experience Logs, group: logs }
+
+    admin.workout_log:
+        class: App\Admin\WorkoutLogAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Training\Entity\WorkoutLog, manager_type: orm, label: Workout Logs, group: logs }
+
+    admin.skill:
+        class: App\Admin\SkillAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Skill\Entity\Skill, manager_type: orm, label: Skills, group: skills }
+
+    admin.skill_stat_bonus:
+        class: App\Admin\SkillStatBonusAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Skill\Entity\SkillStatBonus, manager_type: orm, label: Skill Bonuses, group: skills }
+
+    admin.item_catalog:
+        class: App\Admin\ItemCatalogAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Inventory\Entity\ItemCatalog, manager_type: orm, label: Item Catalog, group: inventory }
+
+    admin.item_stat_bonus:
+        class: App\Admin\ItemStatBonusAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Inventory\Entity\ItemStatBonus, manager_type: orm, label: Item Bonuses, group: inventory }
+
+    admin.user_inventory:
+        class: App\Admin\UserInventoryAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Inventory\Entity\UserInventory, manager_type: orm, label: User Inventory, group: inventory }
+
+    admin.user_skill:
+        class: App\Admin\UserSkillAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Skill\Entity\UserSkill, manager_type: orm, label: User Skills, group: skills }

@@ -10,6 +10,9 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        admin:
+            pattern: ^/admin
+            security: false
         login:
             pattern: ^/api/login
             stateless: true

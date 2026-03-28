@@ -13,7 +13,10 @@
         "doctrine/orm": "^3.6",
         "lexik/jwt-authentication-bundle": "^3.2",
         "nelmio/cors-bundle": "^2.6",
+        "sonata-project/admin-bundle": "^4.40",
+        "sonata-project/doctrine-orm-admin-bundle": "^4.19",
         "stof/doctrine-extensions-bundle": "^1.15",
+        "symfony/asset": "7.2.*",
         "symfony/console": "7.2.*",
         "symfony/dotenv": "7.2.*",
         "symfony/flex": "^2",
@@ -23,9 +26,11 @@
         "symfony/runtime": "7.2.*",
         "symfony/security-bundle": "7.2.*",
         "symfony/serializer": "7.2.*",
+        "symfony/twig-bundle": "7.2.*",
         "symfony/uid": "7.2.*",
         "symfony/validator": "7.2.*",
-        "symfony/yaml": "7.2.*"
+        "symfony/yaml": "7.2.*",
+        "twig/extra-bundle": "^3.24"
     },
     "config": {
         "allow-plugins": {

@@ -18,6 +18,22 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * API controller for health data synchronization and summaries.
+ *
+ * Handles health data that originates from Apple HealthKit (iOS) or Google Health Connect (Android).
+ * The mobile app reads data from the platform health APIs and sends it here in batches.
+ *
+ * Provides three endpoints:
+ * - POST /api/health/sync      -- receive and store batched health data points
+ * - GET  /api/health/summary   -- return aggregated daily health metrics
+ * - GET  /api/health/sync-status -- return last sync time per data type
+ *
+ * All endpoints require JWT authentication.
+ *
+ * Flow: HealthKit/Health Connect -> Mobile App -> POST /sync -> HealthSyncService -> DB
+ *       Mobile App -> GET /summary -> HealthSummaryService -> aggregated JSON response
+ */
 class HealthController extends AbstractController
 {
     public function __construct(
@@ -28,6 +44,15 @@ class HealthController extends AbstractController
     ) {
     }
 
+    /**
+     * Receive a batch of health data points from the mobile app.
+     *
+     * The mobile app collects data from Apple HealthKit or Google Health Connect
+     * and sends it as an array of data points with platform identifier.
+     * Each point has an externalUuid for deduplication (the ID from the health platform).
+     *
+     * Returns count of accepted vs. skipped (duplicate) data points.
+     */
     #[Route('/api/health/sync', name: 'api_health_sync', methods: ['POST'])]
     public function sync(Request $request, #[CurrentUser] User $user): JsonResponse
     {
@@ -40,6 +65,7 @@ class HealthController extends AbstractController
             );
         }
 
+        // Map JSON payload to DTO structure: one sync request with multiple data points
         $dto = new HealthSyncDTO();
         $dto->platform = $data['platform'] ?? null;
 
@@ -60,7 +86,7 @@ class HealthController extends AbstractController
         }
         $dto->dataPoints = $dataPoints;
 
-        // Validate DTO (including nested data point DTOs)
+        // Validate DTO using Symfony Validator (including nested data point DTOs via #[Assert\Valid])
         $violations = $this->validator->validate($dto);
 
         if (count($violations) > 0) {
@@ -75,7 +101,7 @@ class HealthController extends AbstractController
             );
         }
 
-        // Additional validation: check enum values are valid
+        // Additional validation: check enum values are valid (beyond basic NotBlank checks)
         $platformValues = array_map(fn($c) => $c->value, \App\Domain\Health\Enum\Platform::cases());
         if (!in_array($dto->platform, $platformValues, true)) {
             return $this->json(
@@ -84,6 +110,7 @@ class HealthController extends AbstractController
             );
         }
 
+        // Validate each data point's type and recording method against known enum values
         foreach ($dto->dataPoints as $i => $pointDTO) {
             $typeValues = array_map(fn($c) => $c->value, \App\Domain\Health\Enum\HealthDataType::cases());
             if (!in_array($pointDTO->type, $typeValues, true)) {
@@ -102,11 +129,21 @@ class HealthController extends AbstractController
             }
         }
 
+        // Delegate to service: deduplicates by externalUuid, persists new points, updates sync log
         $result = $this->healthSyncService->syncHealthData($user, $dto);
 
         return $this->json($result, Response::HTTP_OK);
     }
 
+    /**
+     * Return aggregated daily health summary for the authenticated user.
+     *
+     * Accepts an optional ?date=YYYY-MM-DD query parameter (defaults to today).
+     * Aggregates steps, calories, distance, sleep, heart rate, and workout minutes
+     * from stored health data points for that day.
+     *
+     * Used by the mobile app's daily dashboard screen.
+     */
     #[Route('/api/health/summary', name: 'api_health_summary', methods: ['GET'])]
     public function summary(Request $request, #[CurrentUser] User $user): JsonResponse
     {
@@ -126,6 +163,13 @@ class HealthController extends AbstractController
         return $this->json($summary, Response::HTTP_OK);
     }
 
+    /**
+     * Return the sync status for each health data type.
+     *
+     * Shows when each data type (steps, heart rate, etc.) was last synced and how
+     * many points were received. Used by the mobile app to determine which data
+     * needs to be re-synced.
+     */
     #[Route('/api/health/sync-status', name: 'api_health_sync_status', methods: ['GET'])]
     public function syncStatus(#[CurrentUser] User $user): JsonResponse
     {

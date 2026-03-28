@@ -19,6 +19,22 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Uid\Uuid;
 
+/**
+ * Central user entity -- represents both the authenticated account and the RPG character.
+ *
+ * Domain layer (User bounded context). This is the core identity of the system.
+ * Every other entity (CharacterStats, HealthDataPoint, WorkoutLog, ExperienceLog) references User.
+ *
+ * Combines:
+ * - Authentication data: login (email), hashed password, roles (Symfony Security)
+ * - Physical profile: height, weight (from registration, used for health calculations)
+ * - RPG profile: characterRace, workoutType preference, activityLevel, desiredGoal
+ *
+ * Data source: created via RegistrationController (mobile app POST).
+ * Exposed via: ProfileController (GET), ApiPlatform (admin API), SonataAdmin (admin panel).
+ *
+ * Implements UserInterface for Symfony Security (JWT authentication via lexik/jwt-auth).
+ */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
 #[ORM\HasLifecycleCallbacks]
@@ -210,14 +226,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->updatedAt;
     }
 
+    /** Doctrine lifecycle callback: auto-update timestamp on every entity change. */
     #[ORM\PreUpdate]
     public function updateTimestamp(): void
     {
         $this->updatedAt = new \DateTimeImmutable();
     }
 
-    // UserInterface methods
+    // --- Symfony Security UserInterface methods ---
 
+    /** All users have ROLE_USER. Admin roles are managed separately. */
     public function getRoles(): array
     {
         return ['ROLE_USER'];
@@ -231,5 +249,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUserIdentifier(): string
     {
         return $this->login;
+    }
+
+    public function __toString(): string
+    {
+        return $this->displayName ?? $this->login;
     }
 }

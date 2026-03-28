@@ -10,8 +10,22 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
+/**
+ * API controller for the authenticated user's profile.
+ *
+ * Returns the current user's account and RPG character data to the mobile app.
+ * Requires JWT authentication -- the #[CurrentUser] attribute resolves the
+ * authenticated User entity from the security token.
+ *
+ * Flow: Mobile App (with JWT) -> GET /api/profile -> User entity from token -> JSON response
+ */
 class ProfileController extends AbstractController
 {
+    /**
+     * Return the authenticated user's full profile as JSON.
+     *
+     * Used by the mobile app to populate the profile screen and RPG character view.
+     */
     #[Route('/api/profile', name: 'api_profile', methods: ['GET'])]
     public function profile(#[CurrentUser] User $user): JsonResponse
     {

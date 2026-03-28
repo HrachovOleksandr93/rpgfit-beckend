@@ -1,0 +1,37 @@
+sonata_admin:
+    title: 'RPGFit Admin'
+    dashboard:
+        groups:
+            users:
+                label: Users
+                icon: '<i class="fa fa-users"></i>'
+                items:
+                    - admin.user
+                    - admin.character_stats
+            training:
+                label: Training Config
+                icon: '<i class="fa fa-dumbbell"></i>'
+                items:
+                    - admin.workout_category
+                    - admin.exercise_type
+                    - admin.exercise_stat_reward
+            logs:
+                label: Logs
+                icon: '<i class="fa fa-list"></i>'
+                items:
+                    - admin.experience_log
+                    - admin.workout_log
+            skills:
+                label: Skills
+                icon: '<i class="fa fa-magic"></i>'
+                items:
+                    - admin.skill
+                    - admin.skill_stat_bonus
+                    - admin.user_skill
+            inventory:
+                label: Inventory
+                icon: '<i class="fa fa-box"></i>'
+                items:
+                    - admin.item_catalog
+                    - admin.item_stat_bonus
+                    - admin.user_inventory

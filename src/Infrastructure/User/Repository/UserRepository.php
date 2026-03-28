@@ -9,6 +9,12 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * Doctrine repository for the User entity.
+ *
+ * Infrastructure layer (User bounded context). Provides data access methods for user
+ * lookup and persistence. Used by RegistrationService for uniqueness checks and
+ * by Symfony Security for authentication (login lookup).
+ *
  * @extends ServiceEntityRepository<User>
  */
 class UserRepository extends ServiceEntityRepository
@@ -27,11 +33,13 @@ class UserRepository extends ServiceEntityRepository
         }
     }
 
+    /** Find user by email login. Used for uniqueness check during registration and by Symfony Security. */
     public function findByLogin(string $login): ?User
     {
         return $this->findOneBy(['login' => $login]);
     }
 
+    /** Find user by display name. Used for uniqueness check during registration. */
     public function findByDisplayName(string $displayName): ?User
     {
         return $this->findOneBy(['displayName' => $displayName]);

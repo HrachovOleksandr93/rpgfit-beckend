@@ -11,6 +11,19 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Uid\Uuid;
 
+/**
+ * Tracks the last sync timestamp and count per health data type per user.
+ *
+ * Domain layer (Health bounded context). One row per (user, data_type) combination.
+ * Updated every time a health sync request is processed by HealthSyncService.
+ *
+ * Purpose: allows the mobile app to query GET /api/health/sync-status to determine
+ * what data has already been synced and when, so it can send only new data points
+ * on the next sync (incremental sync optimization).
+ *
+ * The unique constraint on (user_id, data_type) ensures one tracking row per metric type.
+ * The upsert logic in HealthSyncLogRepository creates or updates these rows.
+ */
 #[ORM\Entity(repositoryClass: HealthSyncLogRepository::class)]
 #[ORM\Table(name: 'health_sync_logs')]
 #[ORM\UniqueConstraint(name: 'unique_user_data_type', columns: ['user_id', 'data_type'])]

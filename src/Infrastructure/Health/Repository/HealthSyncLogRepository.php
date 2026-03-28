@@ -11,6 +11,15 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * Doctrine repository for HealthSyncLog entities.
+ *
+ * Infrastructure layer (Health bounded context). Manages the sync tracking log
+ * that records when each health data type was last synced for each user.
+ *
+ * The upsert() method creates or updates the sync log, providing an idempotent
+ * way to track sync state. Used by HealthSyncService after processing a batch
+ * and by HealthController::syncStatus() for the mobile app to check sync state.
+ *
  * @extends ServiceEntityRepository<HealthSyncLog>
  */
 class HealthSyncLogRepository extends ServiceEntityRepository
@@ -28,6 +37,7 @@ class HealthSyncLogRepository extends ServiceEntityRepository
         ]);
     }
 
+    /** Create or update the sync log for a given user and data type. Idempotent upsert pattern. */
     public function upsert(User $user, HealthDataType $type, \DateTimeImmutable $syncedAt, int $count): void
     {
         $em = $this->getEntityManager();

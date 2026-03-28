@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\User\Enum;
 
+/** RPG character races available during registration. Affects character appearance in the mobile app. */
 enum CharacterRace: string
 {
     case Human = 'human';

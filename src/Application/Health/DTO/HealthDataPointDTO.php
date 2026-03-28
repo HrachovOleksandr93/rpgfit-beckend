@@ -8,6 +8,16 @@ use App\Domain\Health\Enum\HealthDataType;
 use App\Domain\Health\Enum\RecordingMethod;
 use Symfony\Component\Validator\Constraints as Assert;
 
+/**
+ * DTO for a single health data point within a sync batch.
+ *
+ * Represents one measurement from Apple HealthKit or Google Health Connect.
+ * The externalUuid is the original record ID from the health platform,
+ * used by HealthSyncService for deduplication (prevents storing the same record twice).
+ *
+ * Validated by Symfony constraints: all fields except externalUuid and sourceApp are required.
+ * Dates must be in ISO 8601 format (DateTimeInterface::ATOM).
+ */
 final class HealthDataPointDTO
 {
     public ?string $externalUuid = null;

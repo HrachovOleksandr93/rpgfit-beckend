@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Health\Enum;
 
+/** Types of health metrics synced from Apple HealthKit / Google Health Connect via the mobile app. */
 enum HealthDataType: string
 {
     case Steps = 'STEPS';
