@@ -32,6 +32,8 @@ services:
             - '../src/Domain/Activity/Entity/'
             - '../src/Domain/Workout/Entity/'
             - '../src/Domain/Workout/Enum/'
+            - '../src/Domain/Battle/Entity/'
+            - '../src/Domain/Battle/Enum/'
             - '../src/Kernel.php'
 
     # add more service definitions when explicit configuration is needed
@@ -176,6 +178,11 @@ services:
         class: App\Admin\WorkoutPlanExerciseLogAdmin
         tags:
             - { name: sonata.admin, model_class: App\Domain\Workout\Entity\WorkoutPlanExerciseLog, manager_type: orm, label: Exercise Logs, group: 'Workout Plans' }
+
+    admin.workout_session:
+        class: App\Admin\WorkoutSessionAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Battle\Entity\WorkoutSession, manager_type: orm, label: Battle Sessions, group: Battle }
 
     App\Application\Media\Service\MediaUploadService:
         arguments:
