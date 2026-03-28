@@ -22,6 +22,7 @@ use App\Domain\Workout\Enum\ExerciseMovementType;
 use App\Domain\Workout\Enum\MuscleGroup;
 use App\Domain\Workout\Enum\SplitType;
 use App\Infrastructure\Config\Repository\GameSettingRepository;
+use App\Infrastructure\Battle\Repository\WorkoutSessionRepository;
 use App\Infrastructure\Training\Repository\WorkoutLogRepository;
 use App\Infrastructure\User\Repository\UserTrainingPreferenceRepository;
 use App\Infrastructure\Workout\Repository\ExerciseRepository;
@@ -52,6 +53,7 @@ class WorkoutPlanGeneratorServiceTest extends TestCase
     private EntityManagerInterface&MockObject $entityManager;
     private UserTrainingPreferenceRepository&MockObject $trainingPrefRepo;
     private WorkoutLogRepository&MockObject $workoutLogRepo;
+    private WorkoutSessionRepository&MockObject $sessionRepo;
 
     protected function setUp(): void
     {
@@ -63,6 +65,7 @@ class WorkoutPlanGeneratorServiceTest extends TestCase
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->trainingPrefRepo = $this->createMock(UserTrainingPreferenceRepository::class);
         $this->workoutLogRepo = $this->createMock(WorkoutLogRepository::class);
+        $this->sessionRepo = $this->createMock(WorkoutSessionRepository::class);
 
         $this->service = new WorkoutPlanGeneratorService(
             $this->exerciseRepo,
@@ -73,6 +76,7 @@ class WorkoutPlanGeneratorServiceTest extends TestCase
             $this->entityManager,
             $this->trainingPrefRepo,
             $this->workoutLogRepo,
+            $this->sessionRepo,
         );
     }
 

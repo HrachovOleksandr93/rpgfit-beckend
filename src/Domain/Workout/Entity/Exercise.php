@@ -94,6 +94,18 @@ class Exercise
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private ?string $activityCategory = null;
 
+    /** Average weight in kg for this exercise (e.g., bench press = 60kg). Null for non-weighted. */
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $defaultWeight = null;
+
+    /** Average pace in min/km for cardio exercises (e.g., running = 8.0). Null for non-cardio. */
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $defaultPace = null;
+
+    /** Average duration in seconds for timed exercises (e.g., plank = 60). Null for rep-based. */
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $defaultDuration = null;
+
     public function __construct()
     {
         $this->id = Uuid::v4();
@@ -294,6 +306,42 @@ class Exercise
     public function setActivityCategory(?string $activityCategory): self
     {
         $this->activityCategory = $activityCategory;
+
+        return $this;
+    }
+
+    public function getDefaultWeight(): ?float
+    {
+        return $this->defaultWeight;
+    }
+
+    public function setDefaultWeight(?float $defaultWeight): self
+    {
+        $this->defaultWeight = $defaultWeight;
+
+        return $this;
+    }
+
+    public function getDefaultPace(): ?float
+    {
+        return $this->defaultPace;
+    }
+
+    public function setDefaultPace(?float $defaultPace): self
+    {
+        $this->defaultPace = $defaultPace;
+
+        return $this;
+    }
+
+    public function getDefaultDuration(): ?int
+    {
+        return $this->defaultDuration;
+    }
+
+    public function setDefaultDuration(?int $defaultDuration): self
+    {
+        $this->defaultDuration = $defaultDuration;
 
         return $this;
     }

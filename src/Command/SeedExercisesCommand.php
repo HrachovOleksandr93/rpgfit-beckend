@@ -95,12 +95,37 @@ class SeedExercisesCommand extends Command
     private function seedExercises(SymfonyStyle $io): int
     {
         $exercises = $this->getExerciseDefinitions();
+        $benchmarks = $this->getExerciseBenchmarkDefaults();
         $count = 0;
 
         foreach ($exercises as $data) {
-            $existing = $this->entityManager->getRepository(Exercise::class)->findOneBy(['slug' => $data['slug']]);
+            // Merge benchmark defaults for this exercise slug
+            $slug = $data['slug'];
+            if (isset($benchmarks[$slug])) {
+                $data = array_merge($data, $benchmarks[$slug]);
+            }
+
+            $existing = $this->entityManager->getRepository(Exercise::class)->findOneBy(['slug' => $slug]);
             if ($existing) {
-                $io->text(sprintf('  Skipping existing exercise: %s', $data['name']));
+                // Update benchmark fields on existing exercises
+                $updated = false;
+                if (isset($data['defaultWeight']) && $existing->getDefaultWeight() === null) {
+                    $existing->setDefaultWeight($data['defaultWeight']);
+                    $updated = true;
+                }
+                if (isset($data['defaultPace']) && $existing->getDefaultPace() === null) {
+                    $existing->setDefaultPace($data['defaultPace']);
+                    $updated = true;
+                }
+                if (isset($data['defaultDuration']) && $existing->getDefaultDuration() === null) {
+                    $existing->setDefaultDuration($data['defaultDuration']);
+                    $updated = true;
+                }
+                if ($updated) {
+                    $io->text(sprintf('  Updated benchmarks for: %s', $data['name']));
+                } else {
+                    $io->text(sprintf('  Skipping existing exercise: %s', $data['name']));
+                }
                 continue;
             }
 
@@ -119,7 +144,10 @@ class SeedExercisesCommand extends Command
                 ->setDefaultRepsMax($data['defaultRepsMax'] ?? 12)
                 ->setDefaultRestSeconds($data['defaultRestSeconds'] ?? 90)
                 ->setDescription($data['description'] ?? null)
-                ->setActivityCategory($data['activityCategory'] ?? null);
+                ->setActivityCategory($data['activityCategory'] ?? null)
+                ->setDefaultWeight($data['defaultWeight'] ?? null)
+                ->setDefaultPace($data['defaultPace'] ?? null)
+                ->setDefaultDuration($data['defaultDuration'] ?? null);
 
             $this->entityManager->persist($exercise);
             $count++;
@@ -545,6 +573,285 @@ class SeedExercisesCommand extends Command
                     ['day' => 6, 'name' => 'Legs B', 'muscleGroups' => ['quads', 'hamstrings', 'glutes', 'calves', 'core']],
                 ],
             ],
+        ];
+    }
+
+    /**
+     * Default benchmark values for exercises: weight (kg), pace (min/km), duration (seconds).
+     *
+     * These are average values for an intermediate-level trainee and are used by the
+     * BattleResultCalculator to evaluate completion percentage when no user history exists.
+     *
+     * @return array<string, array{defaultWeight?: float, defaultPace?: float, defaultDuration?: int}>
+     */
+    private function getExerciseBenchmarkDefaults(): array
+    {
+        return [
+            // === CHEST ===
+            'barbell-bench-press' => ['defaultWeight' => 60.0],
+            'incline-barbell-press' => ['defaultWeight' => 50.0],
+            'dumbbell-bench-press' => ['defaultWeight' => 20.0],
+            'incline-dumbbell-press' => ['defaultWeight' => 18.0],
+            'decline-bench-press' => ['defaultWeight' => 55.0],
+            'dumbbell-flyes' => ['defaultWeight' => 12.0],
+            'cable-crossover' => ['defaultWeight' => 15.0],
+            'pec-deck-machine' => ['defaultWeight' => 40.0],
+            'push-ups' => ['defaultWeight' => 0.0],
+            'chest-dips' => ['defaultWeight' => 0.0],
+            'landmine-press' => ['defaultWeight' => 20.0],
+            'smith-machine-bench' => ['defaultWeight' => 50.0],
+            'close-grip-bench-press' => ['defaultWeight' => 45.0],
+            'svend-press' => ['defaultWeight' => 10.0],
+
+            // === BACK ===
+            'barbell-row' => ['defaultWeight' => 50.0],
+            'pull-ups' => ['defaultWeight' => 0.0],
+            'lat-pulldown' => ['defaultWeight' => 50.0],
+            'seated-cable-row' => ['defaultWeight' => 50.0],
+            'dumbbell-row' => ['defaultWeight' => 20.0],
+            't-bar-row' => ['defaultWeight' => 40.0],
+            'chin-ups' => ['defaultWeight' => 0.0],
+            'face-pulls' => ['defaultWeight' => 15.0],
+            'cable-pullover' => ['defaultWeight' => 20.0],
+            'inverted-rows' => ['defaultWeight' => 0.0],
+            'meadows-row' => ['defaultWeight' => 20.0],
+            'straight-arm-pulldown' => ['defaultWeight' => 20.0],
+            'rack-pulls' => ['defaultWeight' => 80.0],
+            'pendlay-row' => ['defaultWeight' => 50.0],
+
+            // === SHOULDERS ===
+            'overhead-press' => ['defaultWeight' => 40.0],
+            'dumbbell-shoulder-press' => ['defaultWeight' => 16.0],
+            'lateral-raises' => ['defaultWeight' => 8.0],
+            'front-raises' => ['defaultWeight' => 8.0],
+            'rear-delt-flyes' => ['defaultWeight' => 8.0],
+            'arnold-press' => ['defaultWeight' => 14.0],
+            'barbell-upright-row' => ['defaultWeight' => 30.0],
+            'cable-lateral-raise' => ['defaultWeight' => 8.0],
+            'machine-shoulder-press' => ['defaultWeight' => 35.0],
+            'dumbbell-shrugs' => ['defaultWeight' => 25.0],
+            'landmine-lateral-raise' => ['defaultWeight' => 10.0],
+            'bradford-press' => ['defaultWeight' => 25.0],
+
+            // === BICEPS ===
+            'dumbbell-curl' => ['defaultWeight' => 10.0],
+            'barbell-curl' => ['defaultWeight' => 25.0],
+            'hammer-curl' => ['defaultWeight' => 10.0],
+            'preacher-curl' => ['defaultWeight' => 20.0],
+            'incline-dumbbell-curl' => ['defaultWeight' => 8.0],
+            'cable-curl' => ['defaultWeight' => 20.0],
+            'concentration-curl' => ['defaultWeight' => 8.0],
+            'ez-bar-curl' => ['defaultWeight' => 25.0],
+            'spider-curl' => ['defaultWeight' => 8.0],
+            'reverse-curl' => ['defaultWeight' => 15.0],
+
+            // === TRICEPS ===
+            'tricep-pushdown' => ['defaultWeight' => 25.0],
+            'skull-crushers' => ['defaultWeight' => 20.0],
+            'overhead-tricep-extension' => ['defaultWeight' => 15.0],
+            'dumbbell-kickback' => ['defaultWeight' => 6.0],
+            'dips' => ['defaultWeight' => 0.0],
+            'diamond-push-ups' => ['defaultWeight' => 0.0],
+            'cable-overhead-extension' => ['defaultWeight' => 20.0],
+            'jm-press' => ['defaultWeight' => 25.0],
+            'tricep-rope-pushdown' => ['defaultWeight' => 20.0],
+
+            // === QUADS ===
+            'barbell-squat' => ['defaultWeight' => 80.0],
+            'front-squat' => ['defaultWeight' => 60.0],
+            'leg-press' => ['defaultWeight' => 120.0],
+            'leg-extension' => ['defaultWeight' => 40.0],
+            'goblet-squat' => ['defaultWeight' => 16.0],
+            'hack-squat' => ['defaultWeight' => 60.0],
+            'bulgarian-split-squat' => ['defaultWeight' => 12.0],
+            'walking-lunges' => ['defaultWeight' => 12.0],
+            'sissy-squat' => ['defaultWeight' => 0.0],
+            'step-ups' => ['defaultWeight' => 10.0],
+            'pistol-squat' => ['defaultWeight' => 0.0],
+            'smith-machine-squat' => ['defaultWeight' => 60.0],
+
+            // === HAMSTRINGS ===
+            'barbell-deadlift' => ['defaultWeight' => 100.0],
+            'romanian-deadlift' => ['defaultWeight' => 70.0],
+            'lying-leg-curl' => ['defaultWeight' => 30.0],
+            'seated-leg-curl' => ['defaultWeight' => 35.0],
+            'stiff-leg-deadlift' => ['defaultWeight' => 60.0],
+            'sumo-deadlift' => ['defaultWeight' => 90.0],
+            'good-mornings' => ['defaultWeight' => 40.0],
+            'glute-ham-raise' => ['defaultWeight' => 0.0],
+            'nordic-curl' => ['defaultWeight' => 0.0],
+            'single-leg-deadlift' => ['defaultWeight' => 12.0],
+
+            // === GLUTES ===
+            'hip-thrust' => ['defaultWeight' => 60.0],
+            'cable-kickback' => ['defaultWeight' => 15.0],
+            'glute-bridge' => ['defaultWeight' => 40.0],
+            'sumo-squat' => ['defaultWeight' => 30.0],
+            'donkey-kicks' => ['defaultWeight' => 0.0],
+            'fire-hydrants' => ['defaultWeight' => 0.0],
+            'banded-clamshells' => ['defaultWeight' => 0.0],
+            'curtsy-lunge' => ['defaultWeight' => 10.0],
+            'frog-pumps' => ['defaultWeight' => 0.0],
+
+            // === CALVES ===
+            'standing-calf-raise' => ['defaultWeight' => 60.0],
+            'seated-calf-raise' => ['defaultWeight' => 40.0],
+            'donkey-calf-raise' => ['defaultWeight' => 50.0],
+            'smith-machine-calf-raise' => ['defaultWeight' => 50.0],
+            'leg-press-calf-raise' => ['defaultWeight' => 80.0],
+            'single-leg-calf-raise' => ['defaultWeight' => 0.0],
+
+            // === CORE ===
+            'plank' => ['defaultDuration' => 60],
+            'hanging-leg-raise' => ['defaultWeight' => 0.0],
+            'cable-crunch' => ['defaultWeight' => 30.0],
+            'ab-wheel-rollout' => ['defaultWeight' => 0.0],
+            'russian-twist' => ['defaultWeight' => 8.0],
+            'bicycle-crunch' => ['defaultWeight' => 0.0],
+            'dead-bug' => ['defaultWeight' => 0.0],
+            'dragon-flag' => ['defaultWeight' => 0.0],
+            'mountain-climbers' => ['defaultDuration' => 45],
+            'side-plank' => ['defaultDuration' => 45],
+            'pallof-press' => ['defaultWeight' => 10.0],
+            'decline-sit-ups' => ['defaultWeight' => 0.0],
+
+            // === COMBAT ===
+            'shadow-boxing' => ['defaultDuration' => 180],
+            'heavy-bag-rounds' => ['defaultDuration' => 180],
+            'speed-bag-work' => ['defaultDuration' => 120],
+            'kick-drills' => ['defaultDuration' => 180],
+            'grappling-drills' => ['defaultDuration' => 300],
+            'pad-work' => ['defaultDuration' => 180],
+            'sparring' => ['defaultDuration' => 180],
+            'martial-arts-forms' => ['defaultDuration' => 300],
+            'defense-drills' => ['defaultDuration' => 180],
+            'conditioning-circuit' => ['defaultDuration' => 300],
+
+            // === RUNNING ===
+            'easy-run' => ['defaultPace' => 8.0, 'defaultDuration' => 1800],
+            'tempo-run' => ['defaultPace' => 6.0, 'defaultDuration' => 1500],
+            'interval-sprints' => ['defaultPace' => 5.0, 'defaultDuration' => 1200],
+            'long-run' => ['defaultPace' => 7.5, 'defaultDuration' => 3600],
+            'hill-repeats' => ['defaultPace' => 7.0, 'defaultDuration' => 1500],
+            'fartlek-run' => ['defaultPace' => 6.5, 'defaultDuration' => 1500],
+            'recovery-jog' => ['defaultPace' => 9.0, 'defaultDuration' => 1200],
+            'trail-run' => ['defaultPace' => 8.5, 'defaultDuration' => 2400],
+
+            // === WALKING ===
+            'brisk-walk' => ['defaultPace' => 12.0, 'defaultDuration' => 1800],
+            'power-walk' => ['defaultPace' => 10.0, 'defaultDuration' => 1800],
+            'incline-walk' => ['defaultPace' => 14.0, 'defaultDuration' => 1500],
+            'hiking' => ['defaultPace' => 15.0, 'defaultDuration' => 3600],
+            'nordic-walking' => ['defaultPace' => 11.0, 'defaultDuration' => 1800],
+            'treadmill-walk' => ['defaultPace' => 12.0, 'defaultDuration' => 1800],
+
+            // === CYCLING ===
+            'road-cycling' => ['defaultPace' => 3.0, 'defaultDuration' => 3600],
+            'stationary-cycling' => ['defaultDuration' => 1800],
+            'mountain-biking' => ['defaultPace' => 6.0, 'defaultDuration' => 3600],
+            'spin-class' => ['defaultDuration' => 2700],
+            'cycling-intervals' => ['defaultDuration' => 1500],
+            'hill-cycling' => ['defaultPace' => 5.0, 'defaultDuration' => 2400],
+            'cycling-endurance' => ['defaultPace' => 3.5, 'defaultDuration' => 5400],
+            'cycling-sprints' => ['defaultDuration' => 1200],
+
+            // === SWIMMING ===
+            'freestyle-swim' => ['defaultDuration' => 1800],
+            'backstroke' => ['defaultDuration' => 1800],
+            'breaststroke' => ['defaultDuration' => 1800],
+            'butterfly-stroke' => ['defaultDuration' => 1200],
+            'swim-intervals' => ['defaultDuration' => 1500],
+            'open-water-swim' => ['defaultDuration' => 2400],
+            'swim-drills' => ['defaultDuration' => 1200],
+            'water-treading' => ['defaultDuration' => 900],
+
+            // === FLEXIBILITY / YOGA ===
+            'sun-salutation' => ['defaultDuration' => 600],
+            'warrior-sequence' => ['defaultDuration' => 600],
+            'balance-poses' => ['defaultDuration' => 600],
+            'hip-opener-flow' => ['defaultDuration' => 600],
+            'forward-folds' => ['defaultDuration' => 300],
+            'backbend-practice' => ['defaultDuration' => 600],
+            'restorative-yoga' => ['defaultDuration' => 1800],
+            'power-yoga-flow' => ['defaultDuration' => 2400],
+            'dynamic-stretching' => ['defaultDuration' => 600],
+            'static-stretching' => ['defaultDuration' => 600],
+            'foam-rolling' => ['defaultDuration' => 600],
+            'mobility-drills' => ['defaultDuration' => 600],
+
+            // === CARDIO / HIIT ===
+            'jump-rope' => ['defaultDuration' => 600],
+            'burpees' => ['defaultDuration' => 300],
+            'box-jumps' => ['defaultDuration' => 300],
+            'battle-ropes' => ['defaultDuration' => 300],
+            'rowing-machine' => ['defaultDuration' => 1200],
+            'stair-climber' => ['defaultDuration' => 1200],
+            'elliptical' => ['defaultDuration' => 1800],
+            'kettlebell-swings' => ['defaultWeight' => 16.0, 'defaultDuration' => 300],
+            'sled-push' => ['defaultWeight' => 50.0, 'defaultDuration' => 300],
+            'assault-bike' => ['defaultDuration' => 900],
+
+            // === DANCE ===
+            'zumba' => ['defaultDuration' => 2700],
+            'hip-hop-dance' => ['defaultDuration' => 2700],
+            'salsa-dancing' => ['defaultDuration' => 2700],
+            'ballet-barre' => ['defaultDuration' => 2700],
+            'dance-cardio' => ['defaultDuration' => 1800],
+            'contemporary-dance' => ['defaultDuration' => 2700],
+
+            // === WINTER SPORTS ===
+            'cross-country-skiing' => ['defaultPace' => 6.0, 'defaultDuration' => 3600],
+            'downhill-skiing' => ['defaultDuration' => 3600],
+            'snowboarding' => ['defaultDuration' => 3600],
+            'ice-skating' => ['defaultDuration' => 1800],
+            'snowshoeing' => ['defaultPace' => 15.0, 'defaultDuration' => 3600],
+            'ski-touring' => ['defaultDuration' => 5400],
+
+            // === RACQUET SPORTS ===
+            'tennis-match' => ['defaultDuration' => 3600],
+            'badminton' => ['defaultDuration' => 2700],
+            'squash' => ['defaultDuration' => 2400],
+            'table-tennis' => ['defaultDuration' => 1800],
+            'pickleball' => ['defaultDuration' => 2400],
+            'racquetball' => ['defaultDuration' => 2400],
+
+            // === TEAM SPORTS ===
+            'basketball' => ['defaultDuration' => 3600],
+            'soccer' => ['defaultDuration' => 5400],
+            'volleyball' => ['defaultDuration' => 3600],
+            'rugby-training' => ['defaultDuration' => 3600],
+            'football-training' => ['defaultDuration' => 3600],
+            'hockey-training' => ['defaultDuration' => 3600],
+
+            // === WATER SPORTS ===
+            'kayaking' => ['defaultDuration' => 3600],
+            'stand-up-paddleboard' => ['defaultDuration' => 2700],
+            'surfing' => ['defaultDuration' => 3600],
+            'rowing' => ['defaultDuration' => 2400],
+            'water-polo' => ['defaultDuration' => 3600],
+            'canoeing' => ['defaultDuration' => 3600],
+
+            // === OUTDOOR ===
+            'rock-climbing' => ['defaultDuration' => 3600],
+            'bouldering' => ['defaultDuration' => 2700],
+            'obstacle-course' => ['defaultDuration' => 1800],
+            'parkour' => ['defaultDuration' => 1800],
+            'outdoor-calisthenics' => ['defaultDuration' => 1800],
+            'stair-running' => ['defaultPace' => 7.0, 'defaultDuration' => 1200],
+
+            // === MIND & BODY ===
+            'tai-chi' => ['defaultDuration' => 1800],
+            'pilates' => ['defaultDuration' => 2400],
+            'meditation-movement' => ['defaultDuration' => 1200],
+            'breathing-exercises' => ['defaultDuration' => 600],
+            'qigong' => ['defaultDuration' => 1800],
+            'body-scan-relaxation' => ['defaultDuration' => 900],
+
+            // === OTHER ===
+            'general-workout' => ['defaultDuration' => 1800],
+            'physical-therapy' => ['defaultDuration' => 1800],
+            'functional-training' => ['defaultDuration' => 1800],
+            'crossfit-wod' => ['defaultDuration' => 1200],
         ];
     }
 }

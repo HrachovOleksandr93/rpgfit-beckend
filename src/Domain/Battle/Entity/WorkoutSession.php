@@ -99,6 +99,26 @@ class WorkoutSession
     #[ORM\Column(type: 'integer', options: ['default' => 0])]
     private int $totalXpFromMobs = 0;
 
+    /** Percentage of the workout plan that was completed (0-100+). */
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $completionPercent = null;
+
+    /** Performance tier: failed, survived, completed, exceeded, or raid_exceeded. */
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $performanceTier = null;
+
+    /** Bonus XP percentage applied based on performance (e.g. 10 = +10%). */
+    #[ORM\Column(type: 'float', options: ['default' => 0])]
+    private float $bonusXpPercent = 0;
+
+    /** Whether the user earned loot from this session. */
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $lootEarned = false;
+
+    /** Whether the user earned super loot (raid exceeded performance). */
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $superLootEarned = false;
+
     public function __construct()
     {
         $this->id = Uuid::v4();
@@ -299,6 +319,66 @@ class WorkoutSession
     public function setTotalXpFromMobs(int $totalXpFromMobs): self
     {
         $this->totalXpFromMobs = $totalXpFromMobs;
+
+        return $this;
+    }
+
+    public function getCompletionPercent(): ?float
+    {
+        return $this->completionPercent;
+    }
+
+    public function setCompletionPercent(?float $completionPercent): self
+    {
+        $this->completionPercent = $completionPercent;
+
+        return $this;
+    }
+
+    public function getPerformanceTier(): ?string
+    {
+        return $this->performanceTier;
+    }
+
+    public function setPerformanceTier(?string $performanceTier): self
+    {
+        $this->performanceTier = $performanceTier;
+
+        return $this;
+    }
+
+    public function getBonusXpPercent(): float
+    {
+        return $this->bonusXpPercent;
+    }
+
+    public function setBonusXpPercent(float $bonusXpPercent): self
+    {
+        $this->bonusXpPercent = $bonusXpPercent;
+
+        return $this;
+    }
+
+    public function isLootEarned(): bool
+    {
+        return $this->lootEarned;
+    }
+
+    public function setLootEarned(bool $lootEarned): self
+    {
+        $this->lootEarned = $lootEarned;
+
+        return $this;
+    }
+
+    public function isSuperLootEarned(): bool
+    {
+        return $this->superLootEarned;
+    }
+
+    public function setSuperLootEarned(bool $superLootEarned): self
+    {
+        $this->superLootEarned = $superLootEarned;
 
         return $this;
     }

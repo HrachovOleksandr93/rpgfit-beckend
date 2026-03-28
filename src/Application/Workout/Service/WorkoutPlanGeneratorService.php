@@ -18,6 +18,7 @@ use App\Domain\Workout\Enum\MuscleGroup;
 use App\Domain\Workout\Enum\SplitType;
 use App\Domain\Workout\Enum\WorkoutPlanStatus;
 use App\Infrastructure\Config\Repository\GameSettingRepository;
+use App\Infrastructure\Battle\Repository\WorkoutSessionRepository;
 use App\Infrastructure\Training\Repository\WorkoutLogRepository;
 use App\Infrastructure\User\Repository\UserTrainingPreferenceRepository;
 use App\Infrastructure\Workout\Repository\ExerciseRepository;
@@ -98,6 +99,7 @@ final class WorkoutPlanGeneratorService
         private readonly EntityManagerInterface $entityManager,
         private readonly UserTrainingPreferenceRepository $trainingPreferenceRepository,
         private readonly WorkoutLogRepository $workoutLogRepository,
+        private readonly WorkoutSessionRepository $workoutSessionRepository,
     ) {
     }
 
@@ -124,7 +126,7 @@ final class WorkoutPlanGeneratorService
         }
 
         // Route to the appropriate plan generator based on activity category
-        return match ($activityCategory) {
+        $plan = match ($activityCategory) {
             'strength', null => $this->generateStrengthPlan($user, $date),
             'running' => $this->generateRunningPlan($user, $date),
             'cycling' => $this->generateCyclingPlan($user, $date),
@@ -134,6 +136,34 @@ final class WorkoutPlanGeneratorService
             'cardio', 'hiit' => $this->generateHiitPlan($user, $date),
             default => $this->generateGenericActivityPlan($user, $activityCategory, $date),
         };
+
+        // Apply difficulty reduction if the user's last session was 'failed'
+        $difficultyModifier = $this->getDifficultyModifierForUser($user);
+        if ($difficultyModifier < 1.0) {
+            $plan->setDifficultyModifier($difficultyModifier);
+        }
+
+        return $plan;
+    }
+
+    /**
+     * Check the user's most recent completed session to determine difficulty adjustment.
+     *
+     * If the last session result was 'failed', returns 0.8 (20% easier). Otherwise 1.0.
+     */
+    private function getDifficultyModifierForUser(User $user): float
+    {
+        $recentSessions = $this->workoutSessionRepository->findByUser($user, 1);
+        if (empty($recentSessions)) {
+            return 1.0;
+        }
+
+        $lastSession = $recentSessions[0];
+        if ($lastSession->getPerformanceTier() === 'failed') {
+            return 0.8;
+        }
+
+        return 1.0;
     }
 
     /**

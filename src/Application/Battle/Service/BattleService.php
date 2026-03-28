@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Battle\Service;
 
+use App\Application\Battle\DTO\BattleResult;
 use App\Domain\Battle\Entity\WorkoutSession;
 use App\Domain\Battle\Enum\BattleMode;
 use App\Domain\Battle\Enum\SessionStatus;
@@ -47,6 +48,7 @@ class BattleService
         private readonly CharacterStatsRepository $characterStatsRepository,
         private readonly ExperienceLogRepository $experienceLogRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly BattleResultCalculator $battleResultCalculator,
     ) {
     }
 
@@ -100,7 +102,7 @@ class BattleService
      * @param string[]       $usedSkills        Skill slugs activated during the session
      * @param string[]       $usedConsumables   Consumable item slugs used during the session
      *
-     * @return array{xpAwarded: int, mobDefeated: bool, damageDealt: int, rewardTier: string, levelUp: bool, newLevel: int, totalXp: int, mobsDefeated: int, xpFromMobs: int, xpFromExercises: int, session: WorkoutSession}
+     * @return BattleResult
      */
     public function completeBattle(
         WorkoutSession $session,
@@ -108,7 +110,7 @@ class BattleService
         ?array $healthData,
         array $usedSkills = [],
         array $usedConsumables = [],
-    ): array
+    ): BattleResult
     {
         // Store used skills and consumables on the session entity
         if (!empty($usedSkills)) {
@@ -118,9 +120,7 @@ class BattleService
             $session->setUsedConsumableSlugs($usedConsumables);
         }
 
-        $totalDamage = 0;
-
-        // Process each submitted exercise and its sets
+        // Process each submitted exercise and create log entries
         foreach ($exercises as $exerciseData) {
             $slug = $exerciseData['exerciseSlug'] ?? null;
             if ($slug === null) {
@@ -150,56 +150,20 @@ class BattleService
                 $log->setWeight($weight > 0 ? $weight : null);
                 $log->setDuration($duration > 0 ? $duration : null);
                 $this->entityManager->persist($log);
-
-                // Calculate damage for this set
-                $totalDamage += $this->calculateSetDamage($reps, $weight, $duration);
             }
         }
 
         // Store health data on the session
         $session->setHealthData($healthData);
-        $session->setTotalDamageDealt($totalDamage);
 
-        // Determine if mob was defeated and calculate XP
-        $mobHp = $session->getMobHp() ?? 0;
-        $mobXpReward = $session->getMobXpReward() ?? 0;
-        $mobDefeated = $mobHp > 0 && $totalDamage >= $mobHp;
-
-        // Calculate XP: full if mob defeated, proportional otherwise
-        $xpAwarded = 0;
-        $rewardTier = 'none';
-
-        if ($mobDefeated) {
-            $xpAwarded = $mobXpReward;
-            $rewardTier = $this->determineRewardTier($totalDamage, $mobHp);
-            // Bonus XP from reward tiers
-            $xpAwarded += $this->getRewardTierBonus($rewardTier, $mobXpReward);
-        } elseif ($mobHp > 0) {
-            // Partial XP proportional to damage dealt
-            $ratio = min(1.0, $totalDamage / $mobHp);
-            $xpAwarded = (int) round($mobXpReward * $ratio);
-            $rewardTier = 'partial';
-        }
-
-        $session->setXpAwarded($xpAwarded);
-
-        // Award XP to the user
-        $levelUp = false;
-        $newLevel = 1;
-        $totalXp = 0;
-
-        if ($xpAwarded > 0) {
-            $xpResult = $this->awardXp($session->getUser(), $xpAwarded, $session);
-            $levelUp = $xpResult['leveledUp'];
-            $newLevel = $xpResult['level'];
-            $totalXp = $xpResult['totalXp'];
-        } else {
-            $stats = $this->characterStatsRepository->findByUser($session->getUser());
-            if ($stats !== null) {
-                $newLevel = $stats->getLevel();
-                $totalXp = $stats->getTotalXp();
-            }
-        }
+        // Delegate full result calculation to BattleResultCalculator
+        $result = $this->battleResultCalculator->calculateBattleResult(
+            $session,
+            $exercises,
+            $healthData,
+            $usedSkills,
+            $usedConsumables,
+        );
 
         // Complete the session
         $session->setStatus(SessionStatus::Completed);
@@ -212,26 +176,7 @@ class BattleService
 
         $this->entityManager->flush();
 
-        // Separate XP sources: mob XP accumulated during session vs exercise-based XP
-        $xpFromMobs = $session->getTotalXpFromMobs();
-        $xpFromExercises = $xpAwarded - $xpFromMobs;
-        if ($xpFromExercises < 0) {
-            $xpFromExercises = 0;
-        }
-
-        return [
-            'xpAwarded' => $xpAwarded,
-            'mobDefeated' => $mobDefeated,
-            'damageDealt' => $totalDamage,
-            'rewardTier' => $rewardTier,
-            'levelUp' => $levelUp,
-            'newLevel' => $newLevel,
-            'totalXp' => $totalXp,
-            'mobsDefeated' => $session->getMobsDefeated(),
-            'xpFromMobs' => $xpFromMobs,
-            'xpFromExercises' => $xpFromExercises,
-            'session' => $session,
-        ];
+        return $result;
     }
 
     /**

@@ -86,6 +86,10 @@ class WorkoutPlan
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
+    /** Intensity multiplier for the plan (0.8 = 20% easier, 1.0 = normal). */
+    #[ORM\Column(type: 'float', options: ['default' => 1.0])]
+    private float $difficultyModifier = 1.0;
+
     /** @var Collection<int, WorkoutPlanExercise> */
     #[ORM\OneToMany(targetEntity: WorkoutPlanExercise::class, mappedBy: 'workoutPlan', cascade: ['persist', 'remove'])]
     #[ORM\OrderBy(['orderIndex' => 'ASC'])]
@@ -274,6 +278,18 @@ class WorkoutPlan
     public function removeExercise(WorkoutPlanExercise $exercise): self
     {
         $this->exercises->removeElement($exercise);
+
+        return $this;
+    }
+
+    public function getDifficultyModifier(): float
+    {
+        return $this->difficultyModifier;
+    }
+
+    public function setDifficultyModifier(float $difficultyModifier): self
+    {
+        $this->difficultyModifier = $difficultyModifier;
 
         return $this;
     }

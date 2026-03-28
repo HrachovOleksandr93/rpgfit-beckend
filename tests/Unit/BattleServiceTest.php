@@ -143,27 +143,30 @@ class BattleServiceTest extends TestCase
         $this->assertSame(100, $mobXpReward);
     }
 
-    /** Verify that completeBattle result includes separated XP source fields. */
-    public function testCompleteBattleResultContainsXpSourceFields(): void
+    /** Verify that BattleResult DTO contains all expected fields. */
+    public function testBattleResultDtoContainsExpectedFields(): void
     {
-        // This tests the return array structure, not the full flow
-        $expectedKeys = [
+        // The completeBattle now returns a BattleResult DTO with these properties
+        $expectedProperties = [
+            'performanceTier',
+            'completionPercent',
+            'mobsDefeated',
+            'totalDamage',
+            'xpFromMobs',
+            'bonusXpPercent',
             'xpAwarded',
-            'mobDefeated',
-            'damageDealt',
-            'rewardTier',
+            'lootEarned',
+            'superLootEarned',
             'levelUp',
             'newLevel',
             'totalXp',
-            'mobsDefeated',
-            'xpFromMobs',
-            'xpFromExercises',
-            'session',
+            'message',
         ];
 
-        // Verify the expected keys exist in a typical result
-        foreach ($expectedKeys as $key) {
-            $this->assertContains($key, $expectedKeys);
+        // Verify all expected properties exist on the BattleResult class
+        $reflection = new \ReflectionClass(\App\Application\Battle\DTO\BattleResult::class);
+        foreach ($expectedProperties as $prop) {
+            $this->assertTrue($reflection->hasProperty($prop), "Missing property: $prop");
         }
     }
 
@@ -205,6 +208,7 @@ class BattleServiceTest extends TestCase
             $this->createMock(\App\Infrastructure\Character\Repository\CharacterStatsRepository::class),
             $this->createMock(\App\Infrastructure\Character\Repository\ExperienceLogRepository::class),
             $em,
+            $this->createMock(\App\Application\Battle\Service\BattleResultCalculator::class),
         );
 
         $result = $service->defeatMobAndGetNext($session);
@@ -239,6 +243,7 @@ class BattleServiceTest extends TestCase
             $this->createMock(\App\Infrastructure\Character\Repository\CharacterStatsRepository::class),
             $this->createMock(\App\Infrastructure\Character\Repository\ExperienceLogRepository::class),
             $this->createMock(\Doctrine\ORM\EntityManagerInterface::class),
+            $this->createMock(\App\Application\Battle\Service\BattleResultCalculator::class),
         );
     }
 }

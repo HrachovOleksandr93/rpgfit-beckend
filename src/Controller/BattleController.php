@@ -163,17 +163,7 @@ class BattleController extends AbstractController
             $usedConsumables,
         );
 
-        return $this->json([
-            'xpAwarded' => $result['xpAwarded'],
-            'mobsDefeated' => $result['mobsDefeated'],
-            'totalDamageDealt' => $result['damageDealt'],
-            'xpFromMobs' => $result['xpFromMobs'],
-            'xpFromExercises' => $result['xpFromExercises'],
-            'rewardTier' => $result['rewardTier'],
-            'levelUp' => $result['levelUp'],
-            'newLevel' => $result['newLevel'],
-            'totalXp' => $result['totalXp'],
-        ]);
+        return $this->json($result->toArray());
     }
 
     /**
