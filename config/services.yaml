@@ -30,6 +30,8 @@ services:
             - '../src/Domain/Config/Entity/'
             - '../src/Domain/Mob/Entity/'
             - '../src/Domain/Activity/Entity/'
+            - '../src/Domain/Workout/Entity/'
+            - '../src/Domain/Workout/Enum/'
             - '../src/Kernel.php'
 
     # add more service definitions when explicit configuration is needed
@@ -149,6 +151,31 @@ services:
         class: App\Admin\UserProfessionAdmin
         tags:
             - { name: sonata.admin, model_class: App\Domain\Activity\Entity\UserProfession, manager_type: orm, label: User Professions, group: professions }
+
+    admin.exercise:
+        class: App\Admin\ExerciseAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Workout\Entity\Exercise, manager_type: orm, label: Exercises, group: 'Workout Plans' }
+
+    admin.split_template:
+        class: App\Admin\SplitTemplateAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Workout\Entity\SplitTemplate, manager_type: orm, label: Split Templates, group: 'Workout Plans' }
+
+    admin.workout_plan:
+        class: App\Admin\WorkoutPlanAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Workout\Entity\WorkoutPlan, manager_type: orm, label: Workout Plans, group: 'Workout Plans' }
+
+    admin.workout_plan_exercise:
+        class: App\Admin\WorkoutPlanExerciseAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Workout\Entity\WorkoutPlanExercise, manager_type: orm, label: Plan Exercises, group: 'Workout Plans' }
+
+    admin.workout_plan_exercise_log:
+        class: App\Admin\WorkoutPlanExerciseLogAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Workout\Entity\WorkoutPlanExerciseLog, manager_type: orm, label: Exercise Logs, group: 'Workout Plans' }
 
     App\Application\Media\Service\MediaUploadService:
         arguments:

@@ -67,6 +67,12 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Domain/Activity/Entity'
                 prefix: 'App\Domain\Activity\Entity'
                 alias: DomainActivity
+            DomainWorkout:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Domain/Workout/Entity'
+                prefix: 'App\Domain\Workout\Entity'
+                alias: DomainWorkout
         controller_resolver:
             auto_mapping: false
 
