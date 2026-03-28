@@ -8,10 +8,7 @@ use App\Domain\User\Entity\LinkedAccount;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Enum\OAuthProvider;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
@@ -20,23 +17,8 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  * Tests OAuth login flow (new user, existing user, existing linked account)
  * and the account linking endpoint.
  */
-class OAuthControllerTest extends WebTestCase
+class OAuthControllerTest extends AbstractFunctionalTest
 {
-    private KernelBrowser $client;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->client = static::createClient();
-
-        /** @var EntityManagerInterface $em */
-        $em = self::getContainer()->get('doctrine')->getManager();
-        $schemaTool = new SchemaTool($em);
-        $metadata = $em->getMetadataFactory()->getAllMetadata();
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
-    }
 
     private function createTestUser(string $login = 'hero@rpgfit.com', string $displayName = 'TestHero'): User
     {

@@ -22,9 +22,6 @@ use App\Domain\Workout\Enum\MuscleGroup;
 use App\Domain\Workout\Enum\SplitType;
 use App\Domain\Workout\Enum\WorkoutPlanStatus;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
@@ -36,22 +33,14 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  *
  * Uses an in-memory SQLite database with fresh schema for each test.
  */
-class WorkoutPlanControllerTest extends WebTestCase
+class WorkoutPlanControllerTest extends AbstractFunctionalTest
 {
-    private KernelBrowser $client;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->client = static::createClient();
-
         /** @var EntityManagerInterface $em */
         $em = self::getContainer()->get('doctrine')->getManager();
-        $schemaTool = new SchemaTool($em);
-        $metadata = $em->getMetadataFactory()->getAllMetadata();
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
 
         // Seed required game settings and exercise data
         $this->seedGameSettings($em);

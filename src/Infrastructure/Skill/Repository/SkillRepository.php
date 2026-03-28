@@ -30,4 +30,10 @@ class SkillRepository extends ServiceEntityRepository
         $em->persist($entity);
         $em->flush();
     }
+
+    /** Find a skill by its unique slug identifier, or null if not found. */
+    public function findBySlug(string $slug): ?Skill
+    {
+        return $this->findOneBy(['slug' => $slug]);
+    }
 }

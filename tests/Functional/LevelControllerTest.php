@@ -11,30 +11,19 @@ use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\WorkoutType;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
  * Functional tests for the LevelController endpoints.
  */
-class LevelControllerTest extends WebTestCase
+class LevelControllerTest extends AbstractFunctionalTest
 {
-    private KernelBrowser $client;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->client = static::createClient();
-
         /** @var EntityManagerInterface $em */
         $em = self::getContainer()->get('doctrine')->getManager();
-        $schemaTool = new SchemaTool($em);
-        $metadata = $em->getMetadataFactory()->getAllMetadata();
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
 
         // Seed the minimal game settings needed for leveling
         $this->seedGameSettings($em);

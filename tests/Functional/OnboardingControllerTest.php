@@ -10,10 +10,7 @@ use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\WorkoutType;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
@@ -22,25 +19,9 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  * Tests the full onboarding flow including validation, stat calculation,
  * duplicate display name handling, and auth requirements.
  */
-class OnboardingControllerTest extends WebTestCase
+class OnboardingControllerTest extends AbstractFunctionalTest
 {
     private const string ONBOARDING_URL = '/api/onboarding';
-
-    private KernelBrowser $client;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->client = static::createClient();
-
-        /** @var EntityManagerInterface $em */
-        $em = self::getContainer()->get('doctrine')->getManager();
-        $schemaTool = new SchemaTool($em);
-        $metadata = $em->getMetadataFactory()->getAllMetadata();
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
-    }
 
     /**
      * Create a test user that has NOT completed onboarding (simulates OAuth-created user).

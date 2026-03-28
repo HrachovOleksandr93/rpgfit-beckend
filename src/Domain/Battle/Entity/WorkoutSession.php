@@ -83,6 +83,22 @@ class WorkoutSession
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $healthData = null;
 
+    /** Skill slugs activated by the user during this battle session. */
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $usedSkillSlugs = null;
+
+    /** Consumable item slugs (potions/scrolls) used during this battle session. */
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $usedConsumableSlugs = null;
+
+    /** Number of mobs defeated in this session (for multi-mob battles). */
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $mobsDefeated = 0;
+
+    /** Total XP earned from defeating mobs in this session. */
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $totalXpFromMobs = 0;
+
     public function __construct()
     {
         $this->id = Uuid::v4();
@@ -235,6 +251,54 @@ class WorkoutSession
     public function setHealthData(?array $healthData): self
     {
         $this->healthData = $healthData;
+
+        return $this;
+    }
+
+    public function getUsedSkillSlugs(): ?array
+    {
+        return $this->usedSkillSlugs;
+    }
+
+    public function setUsedSkillSlugs(?array $usedSkillSlugs): self
+    {
+        $this->usedSkillSlugs = $usedSkillSlugs;
+
+        return $this;
+    }
+
+    public function getUsedConsumableSlugs(): ?array
+    {
+        return $this->usedConsumableSlugs;
+    }
+
+    public function setUsedConsumableSlugs(?array $usedConsumableSlugs): self
+    {
+        $this->usedConsumableSlugs = $usedConsumableSlugs;
+
+        return $this;
+    }
+
+    public function getMobsDefeated(): int
+    {
+        return $this->mobsDefeated;
+    }
+
+    public function setMobsDefeated(int $mobsDefeated): self
+    {
+        $this->mobsDefeated = $mobsDefeated;
+
+        return $this;
+    }
+
+    public function getTotalXpFromMobs(): int
+    {
+        return $this->totalXpFromMobs;
+    }
+
+    public function setTotalXpFromMobs(int $totalXpFromMobs): self
+    {
+        $this->totalXpFromMobs = $totalXpFromMobs;
 
         return $this;
     }

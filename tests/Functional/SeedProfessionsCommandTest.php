@@ -8,9 +8,7 @@ use App\Domain\Activity\Entity\ActivityCategory;
 use App\Domain\Activity\Entity\ActivityType;
 use App\Domain\Activity\Entity\Profession;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -19,7 +17,7 @@ use Symfony\Component\Console\Tester\CommandTester;
  * Boots the Symfony kernel, recreates the database schema in SQLite,
  * and tests seeding categories, professions, activity types, --clear, and idempotency.
  */
-class SeedProfessionsCommandTest extends KernelTestCase
+class SeedProfessionsCommandTest extends AbstractFunctionalTest
 {
     private CommandTester $commandTester;
     private EntityManagerInterface $em;
@@ -28,15 +26,7 @@ class SeedProfessionsCommandTest extends KernelTestCase
     {
         parent::setUp();
 
-        self::bootKernel();
-
         $this->em = self::getContainer()->get('doctrine')->getManager();
-
-        // Recreate schema for a clean database state
-        $schemaTool = new SchemaTool($this->em);
-        $metadata = $this->em->getMetadataFactory()->getAllMetadata();
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
 
         $application = new Application(self::$kernel);
         $command = $application->find('app:seed-professions');

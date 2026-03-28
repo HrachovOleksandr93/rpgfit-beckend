@@ -7,25 +7,15 @@ namespace App\Tests\Functional;
 use App\Domain\Inventory\Enum\ItemRarity;
 use App\Domain\Mob\Entity\Mob;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class MobControllerTest extends WebTestCase
+class MobControllerTest extends AbstractFunctionalTest
 {
-    private KernelBrowser $client;
-
     protected function setUp(): void
     {
         parent::setUp();
-        $this->client = static::createClient();
 
         /** @var EntityManagerInterface $em */
         $em = self::getContainer()->get('doctrine')->getManager();
-        $schemaTool = new SchemaTool($em);
-        $metadata = $em->getMetadataFactory()->getAllMetadata();
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
 
         // Seed test mobs
         $this->createMob($em, 'Grey Wolf', 'grey-wolf-3', 3, 200, 15, ItemRarity::Common);

@@ -7,9 +7,7 @@ namespace App\Tests\Functional;
 use App\Domain\Workout\Entity\Exercise;
 use App\Domain\Workout\Entity\SplitTemplate;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -18,7 +16,7 @@ use Symfony\Component\Console\Tester\CommandTester;
  * Boots the Symfony kernel, recreates the database schema in SQLite,
  * then tests exercise and split template seeding with correct counts.
  */
-class SeedExercisesCommandTest extends KernelTestCase
+class SeedExercisesCommandTest extends AbstractFunctionalTest
 {
     private CommandTester $commandTester;
     private EntityManagerInterface $em;
@@ -27,15 +25,7 @@ class SeedExercisesCommandTest extends KernelTestCase
     {
         parent::setUp();
 
-        self::bootKernel();
-
         $this->em = self::getContainer()->get('doctrine')->getManager();
-
-        // Recreate schema for a clean database state
-        $schemaTool = new SchemaTool($this->em);
-        $metadata = $this->em->getMetadataFactory()->getAllMetadata();
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
 
         $application = new Application(self::$kernel);
         $command = $application->find('app:seed-exercises');

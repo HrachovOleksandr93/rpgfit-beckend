@@ -4,31 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional;
 
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-
-class RegistrationControllerTest extends WebTestCase
+class RegistrationControllerTest extends AbstractFunctionalTest
 {
     private const string REGISTRATION_URL = '/api/registration';
-
-    private KernelBrowser $client;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->client = static::createClient();
-
-        // Ensure database schema is created for each test
-        /** @var EntityManagerInterface $em */
-        $em = self::getContainer()->get('doctrine')->getManager();
-        $schemaTool = new SchemaTool($em);
-        $metadata = $em->getMetadataFactory()->getAllMetadata();
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
-    }
 
     private function getValidPayload(array $overrides = []): array
     {

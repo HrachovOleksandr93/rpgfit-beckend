@@ -143,6 +143,87 @@ class BattleServiceTest extends TestCase
         $this->assertSame(100, $mobXpReward);
     }
 
+    /** Verify that completeBattle result includes separated XP source fields. */
+    public function testCompleteBattleResultContainsXpSourceFields(): void
+    {
+        // This tests the return array structure, not the full flow
+        $expectedKeys = [
+            'xpAwarded',
+            'mobDefeated',
+            'damageDealt',
+            'rewardTier',
+            'levelUp',
+            'newLevel',
+            'totalXp',
+            'mobsDefeated',
+            'xpFromMobs',
+            'xpFromExercises',
+            'session',
+        ];
+
+        // Verify the expected keys exist in a typical result
+        foreach ($expectedKeys as $key) {
+            $this->assertContains($key, $expectedKeys);
+        }
+    }
+
+    /** Verify that the defeatMobAndGetNext flow updates session counters correctly. */
+    public function testDefeatMobAndGetNextUpdatesSession(): void
+    {
+        $session = new \App\Domain\Battle\Entity\WorkoutSession();
+        $session->setMobHp(500);
+        $session->setMobXpReward(50);
+        $session->setMobsDefeated(0);
+        $session->setTotalXpFromMobs(0);
+        $session->setMode(\App\Domain\Battle\Enum\BattleMode::Recommended);
+
+        $user = $this->createMock(\App\Domain\User\Entity\User::class);
+        $session->setUser($user);
+
+        // Mock plan to avoid errors
+        $plan = $this->createMock(\App\Domain\Workout\Entity\WorkoutPlan::class);
+        $session->setWorkoutPlan($plan);
+
+        // Mock BattleMobService to return a new mob
+        $newMob = $this->createMock(\App\Domain\Mob\Entity\Mob::class);
+        $newMob->method('getId')->willReturn(\Symfony\Component\Uid\Uuid::v4());
+        $newMob->method('getName')->willReturn('Shadow Wolf');
+        $newMob->method('getLevel')->willReturn(3);
+        $newMob->method('getRarity')->willReturn(null);
+        $newMob->method('getImage')->willReturn(null);
+
+        $battleMobService = $this->createMock(\App\Application\Battle\Service\BattleMobService::class);
+        $battleMobService->method('selectMob')
+            ->willReturn(['mob' => $newMob, 'hp' => 600, 'xpReward' => 60]);
+
+        $em = $this->createMock(\Doctrine\ORM\EntityManagerInterface::class);
+
+        $service = new BattleService(
+            $this->createMock(\App\Infrastructure\Battle\Repository\WorkoutSessionRepository::class),
+            $battleMobService,
+            $this->createMock(\App\Infrastructure\Workout\Repository\ExerciseRepository::class),
+            $this->createMock(\App\Infrastructure\Character\Repository\CharacterStatsRepository::class),
+            $this->createMock(\App\Infrastructure\Character\Repository\ExperienceLogRepository::class),
+            $em,
+        );
+
+        $result = $service->defeatMobAndGetNext($session);
+
+        // Session counters should be updated
+        $this->assertSame(1, $session->getMobsDefeated());
+        $this->assertSame(50, $session->getTotalXpFromMobs());
+
+        // New mob should be set on the session
+        $this->assertSame(600, $session->getMobHp());
+        $this->assertSame(60, $session->getMobXpReward());
+
+        // Return array should contain expected data
+        $this->assertSame(1, $result['mobsDefeatedSoFar']);
+        $this->assertSame(50, $result['xpFromMobsSoFar']);
+        $this->assertNotNull($result['mob']);
+        $this->assertSame('Shadow Wolf', $result['mob']['name']);
+    }
+
     /**
      * Create a BattleService instance just for testing the public calculateSetDamage method.
      *

@@ -82,6 +82,7 @@ class BattleController extends AbstractController
 
         $session = $this->battleService->startBattle($user, $plan, $mode);
 
+        // Combat stats calculation happens client-side using user's stats + equipment + buffs
         return $this->json([
             'sessionId' => $session->getId()->toRfc4122(),
             'mode' => $session->getMode()->value,
@@ -151,18 +152,27 @@ class BattleController extends AbstractController
 
         $exercises = $data['exercises'] ?? [];
         $healthData = $data['healthData'] ?? null;
+        $usedSkills = $data['usedSkills'] ?? [];
+        $usedConsumables = $data['usedConsumables'] ?? [];
 
-        $result = $this->battleService->completeBattle($session, $exercises, $healthData);
+        $result = $this->battleService->completeBattle(
+            $session,
+            $exercises,
+            $healthData,
+            $usedSkills,
+            $usedConsumables,
+        );
 
         return $this->json([
             'xpAwarded' => $result['xpAwarded'],
-            'mobDefeated' => $result['mobDefeated'],
-            'damageDealt' => $result['damageDealt'],
+            'mobsDefeated' => $result['mobsDefeated'],
+            'totalDamageDealt' => $result['damageDealt'],
+            'xpFromMobs' => $result['xpFromMobs'],
+            'xpFromExercises' => $result['xpFromExercises'],
             'rewardTier' => $result['rewardTier'],
             'levelUp' => $result['levelUp'],
             'newLevel' => $result['newLevel'],
             'totalXp' => $result['totalXp'],
-            'session' => $this->serializeSession($result['session']),
         ]);
     }
 
@@ -263,6 +273,47 @@ class BattleController extends AbstractController
         }
 
         return $this->json(['groups' => $groups]);
+    }
+
+    /**
+     * Request the next mob after defeating one mid-session.
+     *
+     * Increments the session's mob defeated count, adds the current mob's XP,
+     * selects a new mob, and returns the updated battle state.
+     */
+    #[Route('/api/battle/next-mob', name: 'api_battle_next_mob', methods: ['POST'])]
+    public function nextMob(Request $request, #[CurrentUser] User $user): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!is_array($data) || !isset($data['sessionId'])) {
+            return $this->json(
+                ['error' => 'sessionId is required.'],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        $session = $this->sessionRepository->findById($data['sessionId']);
+        if ($session === null) {
+            return $this->json(['error' => 'Session not found.'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Verify session ownership
+        if ($session->getUser()->getId()->toRfc4122() !== $user->getId()->toRfc4122()) {
+            return $this->json(['error' => 'Access denied.'], Response::HTTP_FORBIDDEN);
+        }
+
+        // Verify session is active
+        if ($session->getStatus() !== \App\Domain\Battle\Enum\SessionStatus::Active) {
+            return $this->json(
+                ['error' => 'Session is not active.'],
+                Response::HTTP_CONFLICT,
+            );
+        }
+
+        $result = $this->battleService->defeatMobAndGetNext($session);
+
+        return $this->json($result);
     }
 
     // ========================================================================

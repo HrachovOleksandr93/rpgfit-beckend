@@ -71,6 +71,59 @@ class WorkoutSessionEntityTest extends TestCase
         $this->assertNull($session->getMobXpReward());
         $this->assertNull($session->getCompletedAt());
         $this->assertNull($session->getHealthData());
+        $this->assertNull($session->getUsedSkillSlugs());
+        $this->assertNull($session->getUsedConsumableSlugs());
+    }
+
+    /** Verify that new mob tracking fields default to zero. */
+    public function testMobTrackingFieldsDefaultToZero(): void
+    {
+        $session = new WorkoutSession();
+
+        $this->assertSame(0, $session->getMobsDefeated());
+        $this->assertSame(0, $session->getTotalXpFromMobs());
+    }
+
+    /** Verify usedSkillSlugs getter and setter with array data. */
+    public function testUsedSkillSlugsSetterAndGetter(): void
+    {
+        $session = new WorkoutSession();
+        $slugs = ['battle-fury', 'berserker-rage'];
+
+        $session->setUsedSkillSlugs($slugs);
+
+        $this->assertSame($slugs, $session->getUsedSkillSlugs());
+    }
+
+    /** Verify usedConsumableSlugs getter and setter with array data. */
+    public function testUsedConsumableSlugsSetterAndGetter(): void
+    {
+        $session = new WorkoutSession();
+        $slugs = ['strength-potion-minor'];
+
+        $session->setUsedConsumableSlugs($slugs);
+
+        $this->assertSame($slugs, $session->getUsedConsumableSlugs());
+    }
+
+    /** Verify mobsDefeated getter and setter. */
+    public function testMobsDefeatedSetterAndGetter(): void
+    {
+        $session = new WorkoutSession();
+
+        $session->setMobsDefeated(5);
+
+        $this->assertSame(5, $session->getMobsDefeated());
+    }
+
+    /** Verify totalXpFromMobs getter and setter. */
+    public function testTotalXpFromMobsSetterAndGetter(): void
+    {
+        $session = new WorkoutSession();
+
+        $session->setTotalXpFromMobs(350);
+
+        $this->assertSame(350, $session->getTotalXpFromMobs());
     }
 
     /** Verify mode getter and setter with all enum values. */

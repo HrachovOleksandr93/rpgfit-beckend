@@ -30,4 +30,10 @@ class ItemCatalogRepository extends ServiceEntityRepository
         $em->persist($entity);
         $em->flush();
     }
+
+    /** Find an item catalog entry by its unique slug identifier, or null if not found. */
+    public function findBySlug(string $slug): ?ItemCatalog
+    {
+        return $this->findOneBy(['slug' => $slug]);
+    }
 }

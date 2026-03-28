@@ -6,9 +6,7 @@ namespace App\Tests\Functional;
 
 use App\Domain\Mob\Entity\Mob;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -17,7 +15,7 @@ use Symfony\Component\Console\Tester\CommandTester;
  * Boots the Symfony kernel, recreates the database schema in SQLite,
  * and tests CSV import, --dry-run, --update, invalid data, and missing file scenarios.
  */
-class ImportMobsCommandTest extends KernelTestCase
+class ImportMobsCommandTest extends AbstractFunctionalTest
 {
     private CommandTester $commandTester;
     private EntityManagerInterface $em;
@@ -26,15 +24,7 @@ class ImportMobsCommandTest extends KernelTestCase
     {
         parent::setUp();
 
-        self::bootKernel();
-
         $this->em = self::getContainer()->get('doctrine')->getManager();
-
-        // Recreate schema for a clean database state
-        $schemaTool = new SchemaTool($this->em);
-        $metadata = $this->em->getMetadataFactory()->getAllMetadata();
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
 
         $application = new Application(self::$kernel);
         $command = $application->find('app:import-mobs');

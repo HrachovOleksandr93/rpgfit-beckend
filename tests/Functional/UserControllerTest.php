@@ -15,10 +15,7 @@ use App\Domain\User\Enum\Lifestyle;
 use App\Domain\User\Enum\TrainingFrequency;
 use App\Domain\User\Enum\WorkoutType;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
@@ -26,25 +23,9 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  *
  * Tests the full user profile endpoint including stats, inventory, skills, and XP.
  */
-class UserControllerTest extends WebTestCase
+class UserControllerTest extends AbstractFunctionalTest
 {
     private const string USER_URL = '/api/user';
-
-    private KernelBrowser $client;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->client = static::createClient();
-
-        /** @var EntityManagerInterface $em */
-        $em = self::getContainer()->get('doctrine')->getManager();
-        $schemaTool = new SchemaTool($em);
-        $metadata = $em->getMetadataFactory()->getAllMetadata();
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
-    }
 
     private function createFullUser(): User
     {

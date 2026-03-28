@@ -15,9 +15,6 @@ use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\WorkoutType;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
@@ -26,23 +23,16 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
  * Tests equip/unequip/list operations via HTTP, including authentication checks,
  * validation errors, and two-handed weapon slot interactions.
  */
-class EquipmentControllerTest extends WebTestCase
+class EquipmentControllerTest extends AbstractFunctionalTest
 {
-    private KernelBrowser $client;
     private EntityManagerInterface $em;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->client = static::createClient();
-
         /** @var EntityManagerInterface $em */
         $this->em = self::getContainer()->get('doctrine')->getManager();
-        $schemaTool = new SchemaTool($this->em);
-        $metadata = $this->em->getMetadataFactory()->getAllMetadata();
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
     }
 
     private function createTestUser(string $login = 'hero@rpgfit.com', string $password = 'SecurePass123'): User

@@ -92,15 +92,32 @@ class BattleService
      *
      * Calculates damage from each exercise set, determines if the mob was defeated,
      * awards full or partial XP accordingly, and completes both session and plan.
+     * Accepts optional skill and consumable slugs used during the session.
      *
-     * @param WorkoutSession $session   The active session to complete
-     * @param array          $exercises Exercise data with sets from the mobile app
-     * @param array|null     $healthData Health API data (duration, calories, heart rate)
+     * @param WorkoutSession $session           The active session to complete
+     * @param array          $exercises         Exercise data with sets from the mobile app
+     * @param array|null     $healthData        Health API data (duration, calories, heart rate)
+     * @param string[]       $usedSkills        Skill slugs activated during the session
+     * @param string[]       $usedConsumables   Consumable item slugs used during the session
      *
-     * @return array{xpAwarded: int, mobDefeated: bool, damageDealt: int, rewardTier: string, levelUp: bool, newLevel: int, totalXp: int, session: WorkoutSession}
+     * @return array{xpAwarded: int, mobDefeated: bool, damageDealt: int, rewardTier: string, levelUp: bool, newLevel: int, totalXp: int, mobsDefeated: int, xpFromMobs: int, xpFromExercises: int, session: WorkoutSession}
      */
-    public function completeBattle(WorkoutSession $session, array $exercises, ?array $healthData): array
+    public function completeBattle(
+        WorkoutSession $session,
+        array $exercises,
+        ?array $healthData,
+        array $usedSkills = [],
+        array $usedConsumables = [],
+    ): array
     {
+        // Store used skills and consumables on the session entity
+        if (!empty($usedSkills)) {
+            $session->setUsedSkillSlugs($usedSkills);
+        }
+        if (!empty($usedConsumables)) {
+            $session->setUsedConsumableSlugs($usedConsumables);
+        }
+
         $totalDamage = 0;
 
         // Process each submitted exercise and its sets
@@ -195,6 +212,13 @@ class BattleService
 
         $this->entityManager->flush();
 
+        // Separate XP sources: mob XP accumulated during session vs exercise-based XP
+        $xpFromMobs = $session->getTotalXpFromMobs();
+        $xpFromExercises = $xpAwarded - $xpFromMobs;
+        if ($xpFromExercises < 0) {
+            $xpFromExercises = 0;
+        }
+
         return [
             'xpAwarded' => $xpAwarded,
             'mobDefeated' => $mobDefeated,
@@ -203,7 +227,58 @@ class BattleService
             'levelUp' => $levelUp,
             'newLevel' => $newLevel,
             'totalXp' => $totalXp,
+            'mobsDefeated' => $session->getMobsDefeated(),
+            'xpFromMobs' => $xpFromMobs,
+            'xpFromExercises' => $xpFromExercises,
             'session' => $session,
+        ];
+    }
+
+    /**
+     * Record a mob defeat during an active session and select the next mob.
+     *
+     * Adds the current mob's XP to the session total, increments the defeated
+     * counter, selects a new mob via BattleMobService, and updates the session.
+     *
+     * @return array{mob: array|null, mobsDefeatedSoFar: int, xpFromMobsSoFar: int}
+     */
+    public function defeatMobAndGetNext(WorkoutSession $session): array
+    {
+        // Add current mob's XP reward to running total
+        $currentMobXp = $session->getMobXpReward() ?? 0;
+        $session->setTotalXpFromMobs($session->getTotalXpFromMobs() + $currentMobXp);
+
+        // Increment mobs defeated counter
+        $session->setMobsDefeated($session->getMobsDefeated() + 1);
+
+        // Select a new mob for the next encounter
+        $mobData = $this->battleMobService->selectMob($session->getUser(), $session->getMode());
+
+        // Update session with the new mob
+        $session->setMob($mobData['mob']);
+        $session->setMobHp($mobData['hp']);
+        $session->setMobXpReward($mobData['xpReward']);
+
+        $this->entityManager->flush();
+
+        // Build mob response array
+        $mobResponse = null;
+        if ($mobData['mob'] !== null) {
+            $mobResponse = [
+                'id' => $mobData['mob']->getId()->toRfc4122(),
+                'name' => $mobData['mob']->getName(),
+                'hp' => $mobData['hp'],
+                'xpReward' => $mobData['xpReward'],
+                'level' => $mobData['mob']->getLevel(),
+                'rarity' => $mobData['mob']->getRarity()?->value,
+                'image' => $mobData['mob']->getImage()?->getPublicUrl(),
+            ];
+        }
+
+        return [
+            'mob' => $mobResponse,
+            'mobsDefeatedSoFar' => $session->getMobsDefeated(),
+            'xpFromMobsSoFar' => $session->getTotalXpFromMobs(),
         ];
     }
 
