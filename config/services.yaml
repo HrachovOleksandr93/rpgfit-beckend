@@ -29,6 +29,7 @@ services:
             - '../src/Domain/Media/Entity/'
             - '../src/Domain/Config/Entity/'
             - '../src/Domain/Mob/Entity/'
+            - '../src/Domain/Activity/Entity/'
             - '../src/Kernel.php'
 
     # add more service definitions when explicit configuration is needed
@@ -123,6 +124,26 @@ services:
         class: App\Admin\MobAdmin
         tags:
             - { name: sonata.admin, model_class: App\Domain\Mob\Entity\Mob, manager_type: orm, label: Mobs, group: mobs }
+
+    admin.activity_category:
+        class: App\Admin\ActivityCategoryAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Activity\Entity\ActivityCategory, manager_type: orm, label: Activity Categories, group: professions }
+
+    admin.profession:
+        class: App\Admin\ProfessionAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Activity\Entity\Profession, manager_type: orm, label: Professions, group: professions }
+
+    admin.activity_type:
+        class: App\Admin\ActivityTypeAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Activity\Entity\ActivityType, manager_type: orm, label: Activity Types, group: professions }
+
+    admin.user_profession:
+        class: App\Admin\UserProfessionAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Activity\Entity\UserProfession, manager_type: orm, label: User Professions, group: professions }
 
     App\Application\Media\Service\MediaUploadService:
         arguments:

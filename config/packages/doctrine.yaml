@@ -61,6 +61,12 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Domain/Mob/Entity'
                 prefix: 'App\Domain\Mob\Entity'
                 alias: DomainMob
+            DomainActivity:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Domain/Activity/Entity'
+                prefix: 'App\Domain\Activity\Entity'
+                alias: DomainActivity
         controller_resolver:
             auto_mapping: false
 

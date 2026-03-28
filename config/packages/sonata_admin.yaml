@@ -41,6 +41,14 @@ sonata_admin:
                 icon: '<i class="fa fa-skull"></i>'
                 items:
                     - admin.mob
+            professions:
+                label: Professions
+                icon: '<i class="fa fa-shield"></i>'
+                items:
+                    - admin.activity_category
+                    - admin.profession
+                    - admin.activity_type
+                    - admin.user_profession
             media:
                 label: Media
                 icon: '<i class="fa fa-image"></i>'
