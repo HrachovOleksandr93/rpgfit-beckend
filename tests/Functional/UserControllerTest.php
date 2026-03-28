@@ -10,6 +10,7 @@ use App\Domain\User\Enum\ActivityLevel;
 use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\Gender;
+use App\Domain\User\Entity\UserTrainingPreference;
 use App\Domain\User\Enum\Lifestyle;
 use App\Domain\User\Enum\TrainingFrequency;
 use App\Domain\User\Enum\WorkoutType;
@@ -65,13 +66,19 @@ class UserControllerTest extends WebTestCase
         $user->setActivityLevel(ActivityLevel::Active);
         $user->setDesiredGoal(DesiredGoal::GainMass);
         $user->setCharacterRace(CharacterRace::Orc);
-        $user->setTrainingFrequency(TrainingFrequency::Moderate);
-        $user->setLifestyle(Lifestyle::Moderate);
-        $user->setPreferredWorkouts(['powerlifting', 'crossfit']);
         $user->setOnboardingCompleted(true);
         $user->setPassword($hasher->hashPassword($user, 'SecurePass123'));
 
         $em->persist($user);
+
+        // Create training preferences (separate entity)
+        $trainingPref = new UserTrainingPreference();
+        $trainingPref->setUser($user);
+        $trainingPref->setTrainingFrequency(TrainingFrequency::Moderate);
+        $trainingPref->setLifestyle(Lifestyle::Moderate);
+        $trainingPref->setPrimaryTrainingStyle(WorkoutType::Strength);
+        $trainingPref->setPreferredWorkouts(['powerlifting', 'crossfit']);
+        $em->persist($trainingPref);
 
         // Create character stats
         $stats = new CharacterStats();
@@ -140,12 +147,17 @@ class UserControllerTest extends WebTestCase
         $this->assertEquals(75.5, $response['weight']);
         $this->assertSame('orc', $response['characterRace']);
         $this->assertSame('strength', $response['workoutType']);
-        $this->assertSame('moderate', $response['trainingFrequency']);
-        $this->assertSame('moderate', $response['lifestyle']);
         $this->assertSame('active', $response['activityLevel']);
         $this->assertSame('gain_mass', $response['desiredGoal']);
         $this->assertTrue($response['onboardingCompleted']);
-        $this->assertSame(['powerlifting', 'crossfit'], $response['preferredWorkouts']);
+
+        // Verify training preferences are in separate key
+        $this->assertArrayHasKey('trainingPreferences', $response);
+        $this->assertNotNull($response['trainingPreferences']);
+        $this->assertSame('moderate', $response['trainingPreferences']['trainingFrequency']);
+        $this->assertSame('moderate', $response['trainingPreferences']['lifestyle']);
+        $this->assertSame('strength', $response['trainingPreferences']['primaryTrainingStyle']);
+        $this->assertSame(['powerlifting', 'crossfit'], $response['trainingPreferences']['preferredWorkouts']);
 
         // Verify stats
         $this->assertArrayHasKey('stats', $response);

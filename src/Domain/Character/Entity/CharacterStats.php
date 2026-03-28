@@ -47,6 +47,14 @@ class CharacterStats
     #[ORM\Column(type: 'integer')]
     private int $constitution = 0;
 
+    /** Current character level, derived from totalXp via the leveling curve. */
+    #[ORM\Column(type: 'integer', options: ['default' => 1])]
+    private int $level = 1;
+
+    /** Cached cumulative XP earned by this character across all time. */
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $totalXp = 0;
+
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $updatedAt;
 
@@ -105,6 +113,30 @@ class CharacterStats
     public function setConstitution(int $constitution): self
     {
         $this->constitution = $constitution;
+
+        return $this;
+    }
+
+    public function getLevel(): int
+    {
+        return $this->level;
+    }
+
+    public function setLevel(int $level): self
+    {
+        $this->level = $level;
+
+        return $this;
+    }
+
+    public function getTotalXp(): int
+    {
+        return $this->totalXp;
+    }
+
+    public function setTotalXp(int $totalXp): self
+    {
+        $this->totalXp = $totalXp;
 
         return $this;
     }

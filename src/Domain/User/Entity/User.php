@@ -11,8 +11,6 @@ use App\Domain\User\Enum\ActivityLevel;
 use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\Gender;
-use App\Domain\User\Enum\Lifestyle;
-use App\Domain\User\Enum\TrainingFrequency;
 use App\Domain\User\Enum\WorkoutType;
 use App\Infrastructure\User\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -111,21 +109,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     #[Groups(['user:read'])]
     private bool $onboardingCompleted = false;
-
-    // New field: array of preferred workout slugs (e.g. running, powerlifting)
-    #[ORM\Column(type: 'json', nullable: true)]
-    #[Groups(['user:read'])]
-    private ?array $preferredWorkouts = null;
-
-    // New field: how often the user trains per week
-    #[ORM\Column(type: 'string', length: 20, nullable: true, enumType: TrainingFrequency::class)]
-    #[Groups(['user:read'])]
-    private ?TrainingFrequency $trainingFrequency = null;
-
-    // New field: daily activity level outside of training
-    #[ORM\Column(type: 'string', length: 20, nullable: true, enumType: Lifestyle::class)]
-    #[Groups(['user:read'])]
-    private ?Lifestyle $lifestyle = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
     #[Groups(['user:read'])]
@@ -275,42 +258,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setOnboardingCompleted(bool $onboardingCompleted): self
     {
         $this->onboardingCompleted = $onboardingCompleted;
-
-        return $this;
-    }
-
-    public function getPreferredWorkouts(): ?array
-    {
-        return $this->preferredWorkouts;
-    }
-
-    public function setPreferredWorkouts(?array $preferredWorkouts): self
-    {
-        $this->preferredWorkouts = $preferredWorkouts;
-
-        return $this;
-    }
-
-    public function getTrainingFrequency(): ?TrainingFrequency
-    {
-        return $this->trainingFrequency;
-    }
-
-    public function setTrainingFrequency(?TrainingFrequency $trainingFrequency): self
-    {
-        $this->trainingFrequency = $trainingFrequency;
-
-        return $this;
-    }
-
-    public function getLifestyle(): ?Lifestyle
-    {
-        return $this->lifestyle;
-    }
-
-    public function setLifestyle(?Lifestyle $lifestyle): self
-    {
-        $this->lifestyle = $lifestyle;
 
         return $this;
     }

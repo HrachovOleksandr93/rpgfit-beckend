@@ -38,6 +38,7 @@ class ItemCatalogAdmin extends AbstractAdmin
             ->add('rarity', null, ['template' => null])
             ->add('slot', null, ['template' => null])
             ->add('stackable')
+            ->add('twoHanded')
             ->add(ListMapper::NAME_ACTIONS, null, [
                 'actions' => ['show' => [], 'edit' => [], 'delete' => []],
             ]);
@@ -80,6 +81,10 @@ class ItemCatalogAdmin extends AbstractAdmin
                     ),
                 ])
                 ->add('durability', IntegerType::class, ['required' => false])
+                ->add('twoHanded', CheckboxType::class, ['required' => false, 'help' => 'Only relevant for weapons'])
+            ->end()
+            ->with('Media', ['class' => 'col-md-6'])
+                ->add('image', null, ['required' => false])
             ->end()
             ->with('Consumable Properties', ['class' => 'col-md-6'])
                 ->add('duration', IntegerType::class, ['required' => false, 'help' => 'Duration in minutes'])
@@ -94,6 +99,6 @@ class ItemCatalogAdmin extends AbstractAdmin
             ->add('id')->add('name')->add('slug')->add('description')
             ->add('itemType')->add('rarity')->add('icon')
             ->add('slot')->add('durability')->add('duration')
-            ->add('stackable')->add('maxStack');
+            ->add('stackable')->add('maxStack')->add('twoHanded')->add('image');
     }
 }

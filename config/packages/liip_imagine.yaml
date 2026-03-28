@@ -1,0 +1,39 @@
+liip_imagine:
+    # Driver: gd (built-in) or imagick
+    driver: gd
+
+    resolvers:
+        default:
+            web_path:
+                web_root: '%kernel.project_dir%/public'
+                cache_prefix: media/cache
+
+    loaders:
+        default:
+            filesystem:
+                data_root: '%kernel.project_dir%/public/uploads'
+
+    filter_sets:
+        # Thumbnail for lists (small square)
+        thumbnail:
+            quality: 85
+            filters:
+                thumbnail: { size: [150, 150], mode: outbound }
+
+        # Medium size for detail views
+        medium:
+            quality: 85
+            filters:
+                thumbnail: { size: [400, 400], mode: inset }
+
+        # Large size for full view
+        large:
+            quality: 90
+            filters:
+                thumbnail: { size: [800, 800], mode: inset }
+
+        # Icon size for items/skills in inventory
+        icon:
+            quality: 85
+            filters:
+                thumbnail: { size: [64, 64], mode: outbound }

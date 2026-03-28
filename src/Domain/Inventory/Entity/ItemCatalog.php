@@ -7,6 +7,7 @@ namespace App\Domain\Inventory\Entity;
 use App\Domain\Inventory\Enum\EquipmentSlot;
 use App\Domain\Inventory\Enum\ItemRarity;
 use App\Domain\Inventory\Enum\ItemType;
+use App\Domain\Media\Entity\MediaFile;
 use App\Infrastructure\Inventory\Repository\ItemCatalogRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -65,11 +66,20 @@ class ItemCatalog
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $duration = null;
 
+    /** Whether this weapon requires both hands (only relevant for weapon-type equipment) */
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $twoHanded = false;
+
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $stackable = false;
 
     #[ORM\Column(type: 'integer', options: ['default' => 1])]
     private int $maxStack = 1;
+
+    /** Optional image for this catalog item, linked via MediaFile entity */
+    #[ORM\ManyToOne(targetEntity: MediaFile::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?MediaFile $image = null;
 
     /** @var Collection<int, ItemStatBonus> */
     #[ORM\OneToMany(targetEntity: ItemStatBonus::class, mappedBy: 'itemCatalog', cascade: ['persist', 'remove'])]
@@ -214,6 +224,30 @@ class ItemCatalog
     public function setMaxStack(int $maxStack): self
     {
         $this->maxStack = $maxStack;
+
+        return $this;
+    }
+
+    public function isTwoHanded(): bool
+    {
+        return $this->twoHanded;
+    }
+
+    public function setTwoHanded(bool $twoHanded): self
+    {
+        $this->twoHanded = $twoHanded;
+
+        return $this;
+    }
+
+    public function getImage(): ?MediaFile
+    {
+        return $this->image;
+    }
+
+    public function setImage(?MediaFile $image): self
+    {
+        $this->image = $image;
 
         return $this;
     }

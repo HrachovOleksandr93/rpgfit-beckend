@@ -9,8 +9,6 @@ use App\Domain\User\Enum\ActivityLevel;
 use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\Gender;
-use App\Domain\User\Enum\Lifestyle;
-use App\Domain\User\Enum\TrainingFrequency;
 use App\Domain\User\Enum\WorkoutType;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -63,25 +61,16 @@ class UserEntityTest extends TestCase
     {
         $user = new User();
 
-        // New fields default to null/false
+        // Fields default to null/false
         $this->assertNull($user->getGender());
         $this->assertFalse($user->isOnboardingCompleted());
-        $this->assertNull($user->getPreferredWorkouts());
-        $this->assertNull($user->getTrainingFrequency());
-        $this->assertNull($user->getLifestyle());
 
-        // Set new fields
+        // Set fields
         $user->setGender(Gender::Male);
         $user->setOnboardingCompleted(true);
-        $user->setPreferredWorkouts(['running', 'powerlifting']);
-        $user->setTrainingFrequency(TrainingFrequency::Moderate);
-        $user->setLifestyle(Lifestyle::Active);
 
         $this->assertSame(Gender::Male, $user->getGender());
         $this->assertTrue($user->isOnboardingCompleted());
-        $this->assertSame(['running', 'powerlifting'], $user->getPreferredWorkouts());
-        $this->assertSame(TrainingFrequency::Moderate, $user->getTrainingFrequency());
-        $this->assertSame(Lifestyle::Active, $user->getLifestyle());
     }
 
     public function testNullableFieldsDefaultToNull(): void
@@ -137,16 +126,6 @@ class UserEntityTest extends TestCase
             $user->setGender($gender);
             $this->assertSame($gender, $user->getGender());
         }
-
-        foreach (TrainingFrequency::cases() as $freq) {
-            $user->setTrainingFrequency($freq);
-            $this->assertSame($freq, $user->getTrainingFrequency());
-        }
-
-        foreach (Lifestyle::cases() as $ls) {
-            $user->setLifestyle($ls);
-            $this->assertSame($ls, $user->getLifestyle());
-        }
     }
 
     public function testEnumStringBackedValues(): void
@@ -184,10 +163,7 @@ class UserEntityTest extends TestCase
             ->setDesiredGoal(DesiredGoal::Maintain)
             ->setCharacterRace(CharacterRace::Human)
             ->setGender(Gender::Female)
-            ->setOnboardingCompleted(true)
-            ->setPreferredWorkouts(['yoga'])
-            ->setTrainingFrequency(TrainingFrequency::Light)
-            ->setLifestyle(Lifestyle::Sedentary);
+            ->setOnboardingCompleted(true);
 
         $this->assertSame($user, $result);
     }

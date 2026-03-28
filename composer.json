@@ -12,6 +12,7 @@
         "doctrine/doctrine-migrations-bundle": "^4.0",
         "doctrine/orm": "^3.6",
         "lexik/jwt-authentication-bundle": "^3.2",
+        "liip/imagine-bundle": "^2.15",
         "nelmio/cors-bundle": "^2.6",
         "sonata-project/admin-bundle": "^4.40",
         "sonata-project/doctrine-orm-admin-bundle": "^4.19",

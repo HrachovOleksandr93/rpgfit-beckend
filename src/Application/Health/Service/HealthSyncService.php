@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Health\Service;
 
+use App\Application\Character\Service\XpAwardService;
 use App\Application\Health\DTO\HealthSyncDTO;
 use App\Domain\Health\Entity\HealthDataPoint;
 use App\Domain\Health\Enum\HealthDataType;
@@ -33,13 +34,16 @@ final class HealthSyncService
     public function __construct(
         private readonly HealthDataPointRepository $dataPointRepository,
         private readonly HealthSyncLogRepository $syncLogRepository,
+        private readonly XpAwardService $xpAwardService,
     ) {
     }
 
     /**
      * Process and persist a batch of health data points from the mobile app.
      *
-     * @return array{accepted: int, duplicates_skipped: int} Summary of sync results
+     * After persisting the data, awards XP based on the accepted health metrics.
+     *
+     * @return array{accepted: int, duplicates_skipped: int, xp: array} Summary of sync results with XP info
      */
     public function syncHealthData(User $user, HealthSyncDTO $dto): array
     {
@@ -107,9 +111,26 @@ final class HealthSyncService
             );
         }
 
+        // Award XP for all accepted (non-duplicate) health data points
+        $xpDataPoints = [];
+        foreach ($entities as $entity) {
+            $xpDataPoints[] = [
+                'type' => $entity->getDataType(),
+                'value' => $entity->getValue(),
+            ];
+        }
+        $xpResult = $this->xpAwardService->awardXpFromHealthSync($user, $xpDataPoints);
+
         return [
             'accepted' => $accepted,
             'duplicates_skipped' => $duplicatesSkipped,
+            'xp' => [
+                'awarded' => $xpResult['xpAwarded'],
+                'totalXp' => $xpResult['newTotalXp'],
+                'level' => $xpResult['level'],
+                'leveledUp' => $xpResult['leveledUp'],
+                'progress' => $xpResult['levelProgress'],
+            ],
         ];
     }
 }

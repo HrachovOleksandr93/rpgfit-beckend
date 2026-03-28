@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Functional;
 
+use App\Domain\Config\Entity\GameSetting;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Enum\ActivityLevel;
 use App\Domain\User\Enum\CharacterRace;
@@ -31,6 +32,36 @@ class HealthControllerTest extends WebTestCase
         $metadata = $em->getMetadataFactory()->getAllMetadata();
         $schemaTool->dropSchema($metadata);
         $schemaTool->createSchema($metadata);
+
+        // Seed game settings required by the XP award pipeline
+        $this->seedGameSettings($em);
+    }
+
+    private function seedGameSettings(EntityManagerInterface $em): void
+    {
+        $settings = [
+            ['xp_rates', 'xp_rate_steps', '10'],
+            ['xp_rates', 'xp_rate_active_energy', '25'],
+            ['xp_rates', 'xp_rate_workout', '15'],
+            ['xp_rates', 'xp_rate_distance', '10'],
+            ['xp_rates', 'xp_rate_sleep', '10'],
+            ['xp_rates', 'xp_rate_flights', '5'],
+            ['xp_caps', 'xp_daily_cap', '3000'],
+            ['xp_caps', 'xp_sleep_max_hours', '9'],
+            ['leveling', 'level_formula_quad', '4.2'],
+            ['leveling', 'level_formula_linear', '28'],
+            ['leveling', 'level_max', '100'],
+        ];
+
+        foreach ($settings as [$category, $key, $value]) {
+            $s = new GameSetting();
+            $s->setCategory($category);
+            $s->setKey($key);
+            $s->setValue($value);
+            $em->persist($s);
+        }
+
+        $em->flush();
     }
 
     private function createTestUser(string $login = 'hero@rpgfit.com', string $password = 'SecurePass123'): User
@@ -453,5 +484,75 @@ class HealthControllerTest extends WebTestCase
 
         $response = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertArrayHasKey('errors', $response);
+    }
+
+    public function testSyncResponseIncludesXpField(): void
+    {
+        $this->createTestUser();
+        $token = $this->getToken();
+
+        $this->client->request(
+            'POST',
+            '/api/health/sync',
+            [],
+            [],
+            [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            ],
+            json_encode($this->getValidSyncPayload()),
+        );
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('xp', $response);
+        $this->assertArrayHasKey('awarded', $response['xp']);
+        $this->assertArrayHasKey('totalXp', $response['xp']);
+        $this->assertArrayHasKey('level', $response['xp']);
+        $this->assertArrayHasKey('leveledUp', $response['xp']);
+        $this->assertArrayHasKey('progress', $response['xp']);
+        $this->assertGreaterThan(0, $response['xp']['awarded']);
+    }
+
+    public function testSyncXpIsCalculatedCorrectly(): void
+    {
+        $this->createTestUser();
+        $token = $this->getToken();
+
+        // Send only steps: 8432 steps -> floor(8432/1000 * 10) = 84 XP
+        $payload = [
+            'platform' => 'ios',
+            'dataPoints' => [
+                [
+                    'externalUuid' => 'xp-test-001',
+                    'type' => 'STEPS',
+                    'value' => 8432.0,
+                    'unit' => 'count',
+                    'dateFrom' => '2026-03-28T08:00:00+00:00',
+                    'dateTo' => '2026-03-28T09:00:00+00:00',
+                    'sourceApp' => 'com.apple.health',
+                    'recordingMethod' => 'automatic',
+                ],
+            ],
+        ];
+
+        $this->client->request(
+            'POST',
+            '/api/health/sync',
+            [],
+            [],
+            [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            ],
+            json_encode($payload),
+        );
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertSame(84, $response['xp']['awarded']);
+        $this->assertSame(84, $response['xp']['totalXp']);
     }
 }

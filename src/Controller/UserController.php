@@ -9,6 +9,7 @@ use App\Infrastructure\Character\Repository\CharacterStatsRepository;
 use App\Infrastructure\Character\Repository\ExperienceLogRepository;
 use App\Infrastructure\Inventory\Repository\UserInventoryRepository;
 use App\Infrastructure\Skill\Repository\UserSkillRepository;
+use App\Infrastructure\User\Repository\UserTrainingPreferenceRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
@@ -30,6 +31,7 @@ class UserController extends AbstractController
         private readonly UserInventoryRepository $userInventoryRepository,
         private readonly UserSkillRepository $userSkillRepository,
         private readonly ExperienceLogRepository $experienceLogRepository,
+        private readonly UserTrainingPreferenceRepository $trainingPreferenceRepository,
     ) {
     }
 
@@ -49,6 +51,9 @@ class UserController extends AbstractController
 
         // Load unlocked skills
         $userSkills = $this->userSkillRepository->findByUser($user);
+
+        // Load training preferences (1:1 with User, may not exist before onboarding)
+        $trainingPref = $this->trainingPreferenceRepository->findByUser($user);
 
         // Calculate total XP from all experience log entries
         $totalXp = $this->experienceLogRepository->getTotalXpByUser($user);
@@ -83,12 +88,15 @@ class UserController extends AbstractController
             'weight' => $user->getWeight(),
             'characterRace' => $user->getCharacterRace()?->value,
             'workoutType' => $user->getWorkoutType()?->value,
-            'trainingFrequency' => $user->getTrainingFrequency()?->value,
-            'lifestyle' => $user->getLifestyle()?->value,
             'activityLevel' => $user->getActivityLevel()?->value,
             'desiredGoal' => $user->getDesiredGoal()?->value,
-            'preferredWorkouts' => $user->getPreferredWorkouts(),
             'onboardingCompleted' => $user->isOnboardingCompleted(),
+            'trainingPreferences' => $trainingPref !== null ? [
+                'trainingFrequency' => $trainingPref->getTrainingFrequency()?->value,
+                'lifestyle' => $trainingPref->getLifestyle()?->value,
+                'primaryTrainingStyle' => $trainingPref->getPrimaryTrainingStyle()?->value,
+                'preferredWorkouts' => $trainingPref->getPreferredWorkouts(),
+            ] : null,
             'stats' => $stats !== null ? [
                 'strength' => $stats->getStrength(),
                 'dexterity' => $stats->getDexterity(),

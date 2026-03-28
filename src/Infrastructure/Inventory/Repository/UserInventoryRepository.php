@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Inventory\Repository;
 
 use App\Domain\Inventory\Entity\UserInventory;
+use App\Domain\Inventory\Enum\EquipmentSlot;
 use App\Domain\User\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -48,12 +49,31 @@ class UserInventoryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Returns all equipped items for a user.
+     * Returns all equipped items for a user (non-soft-deleted).
      *
      * @return UserInventory[]
      */
     public function findEquippedByUser(User $user): array
     {
-        return $this->findBy(['user' => $user, 'equipped' => true]);
+        return $this->findBy([
+            'user' => $user,
+            'equipped' => true,
+            'deletedAt' => null,
+        ]);
+    }
+
+    /**
+     * Returns equipped items in a specific slot for a user.
+     *
+     * @return UserInventory[]
+     */
+    public function findEquippedBySlot(User $user, EquipmentSlot $slot): array
+    {
+        return $this->findBy([
+            'user' => $user,
+            'equipped' => true,
+            'equippedSlot' => $slot,
+            'deletedAt' => null,
+        ]);
     }
 }

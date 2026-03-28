@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Admin;
 
+use App\Domain\Inventory\Enum\EquipmentSlot;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
 use Sonata\AdminBundle\Datagrid\ListMapper;
 use Sonata\AdminBundle\Form\FormMapper;
 use Sonata\AdminBundle\Show\ShowMapper;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 
 /**
@@ -30,6 +32,7 @@ class UserInventoryAdmin extends AbstractAdmin
             ->add('itemCatalog.name', null, ['label' => 'Item'])
             ->add('quantity')
             ->add('equipped')
+            ->add('equippedSlot', null, ['template' => null])
             ->add('currentDurability')
             ->add('obtainedAt')
             ->add('expiresAt')
@@ -51,6 +54,13 @@ class UserInventoryAdmin extends AbstractAdmin
             ->add('itemCatalog', null, ['required' => true])
             ->add('quantity', IntegerType::class)
             ->add('equipped', CheckboxType::class, ['required' => false])
+            ->add('equippedSlot', ChoiceType::class, [
+                'required' => false,
+                'choices' => array_combine(
+                    array_map(fn($s) => $s->name, EquipmentSlot::cases()),
+                    EquipmentSlot::cases()
+                ),
+            ])
             ->add('currentDurability', IntegerType::class, ['required' => false]);
     }
 
@@ -58,7 +68,7 @@ class UserInventoryAdmin extends AbstractAdmin
     {
         $show
             ->add('id')->add('user')->add('itemCatalog.name', null, ['label' => 'Item'])
-            ->add('quantity')->add('equipped')->add('currentDurability')
+            ->add('quantity')->add('equipped')->add('equippedSlot')->add('currentDurability')
             ->add('obtainedAt')->add('expiresAt')->add('deletedAt');
     }
 }

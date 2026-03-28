@@ -1,0 +1,10 @@
+name,slug,level,hp,xp_reward,rarity,description
+Grey Wolf,grey-wolf-3,3,200,15,common,A common wolf found in the forests
+Black Wolf,black-wolf-3,3,230,18,common,A darker variant of the forest wolf
+Northern Wolf,northern-wolf-5,5,380,28,uncommon,A fierce wolf from the northern mountains
+Forest Spider,forest-spider-1,1,80,5,common,A small spider lurking in the bushes
+Giant Rat,giant-rat-1,1,60,4,common,An oversized rat from the sewers
+Skeleton Warrior,skeleton-warrior-10,10,850,65,common,An undead warrior guarding ancient tombs
+Dark Knight,dark-knight-20,20,2200,180,uncommon,A fallen knight corrupted by dark magic
+Fire Dragon,fire-dragon-50,50,15000,1200,epic,A massive dragon breathing flames
+Ancient Dragon,ancient-dragon-80,80,45000,3800,legendary,An elder dragon of immense power

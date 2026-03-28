@@ -26,6 +26,9 @@ services:
             - '../src/Domain/Skill/Entity/'
             - '../src/Domain/Inventory/Entity/'
             - '../src/Domain/Inventory/Enum/'
+            - '../src/Domain/Media/Entity/'
+            - '../src/Domain/Config/Entity/'
+            - '../src/Domain/Mob/Entity/'
             - '../src/Kernel.php'
 
     # add more service definitions when explicit configuration is needed
@@ -96,7 +99,31 @@ services:
         tags:
             - { name: sonata.admin, model_class: App\Domain\Skill\Entity\UserSkill, manager_type: orm, label: User Skills, group: skills }
 
+    admin.user_training_preference:
+        class: App\Admin\UserTrainingPreferenceAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\User\Entity\UserTrainingPreference, manager_type: orm, label: Training Preferences, group: users }
+
     admin.linked_account:
         class: App\Admin\LinkedAccountAdmin
         tags:
             - { name: sonata.admin, model_class: App\Domain\User\Entity\LinkedAccount, manager_type: orm, label: Linked Accounts, group: users }
+
+    admin.game_setting:
+        class: App\Admin\GameSettingAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Config\Entity\GameSetting, manager_type: orm, label: Game Settings, group: config }
+
+    admin.media_file:
+        class: App\Admin\MediaFileAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Media\Entity\MediaFile, manager_type: orm, label: Media Files, group: media }
+
+    admin.mob:
+        class: App\Admin\MobAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Mob\Entity\Mob, manager_type: orm, label: Mobs, group: mobs }
+
+    App\Application\Media\Service\MediaUploadService:
+        arguments:
+            $uploadDir: '%kernel.project_dir%/public/uploads'

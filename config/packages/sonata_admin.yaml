@@ -36,3 +36,13 @@ sonata_admin:
                     - admin.item_catalog
                     - admin.item_stat_bonus
                     - admin.user_inventory
+            mobs:
+                label: Mobs
+                icon: '<i class="fa fa-skull"></i>'
+                items:
+                    - admin.mob
+            media:
+                label: Media
+                icon: '<i class="fa fa-image"></i>'
+                items:
+                    - admin.media_file

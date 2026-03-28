@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Skill\Entity;
 
+use App\Domain\Media\Entity\MediaFile;
 use App\Infrastructure\Skill\Repository\SkillRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -43,6 +44,11 @@ class Skill
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $icon = null;
+
+    /** Optional image for this skill, linked via MediaFile entity */
+    #[ORM\ManyToOne(targetEntity: MediaFile::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?MediaFile $image = null;
 
     #[ORM\Column(type: 'integer', options: ['default' => 1])]
     private int $requiredLevel = 1;
@@ -106,6 +112,18 @@ class Skill
     public function setIcon(?string $icon): self
     {
         $this->icon = $icon;
+
+        return $this;
+    }
+
+    public function getImage(): ?MediaFile
+    {
+        return $this->image;
+    }
+
+    public function setImage(?MediaFile $image): self
+    {
+        $this->image = $image;
 
         return $this;
     }

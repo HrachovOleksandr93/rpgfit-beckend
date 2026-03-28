@@ -1,0 +1,6 @@
+name,slug,level,hp,xp_reward,rarity,description
+Test Wolf,test-wolf-1,1,100,8,common,A test wolf
+Test Bear,test-bear-5,5,400,32,uncommon,A test bear
+Test Spider,test-spider-3,3,180,14,common,A test spider
+Test Dragon,test-dragon-50,50,12000,960,epic,A test dragon
+Test Rat,test-rat-1,1,50,4,common,A test rat

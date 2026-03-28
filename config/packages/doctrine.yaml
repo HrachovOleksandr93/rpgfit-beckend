@@ -43,6 +43,24 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Domain/Inventory/Entity'
                 prefix: 'App\Domain\Inventory\Entity'
                 alias: DomainInventory
+            DomainMedia:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Domain/Media/Entity'
+                prefix: 'App\Domain\Media\Entity'
+                alias: DomainMedia
+            DomainConfig:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Domain/Config/Entity'
+                prefix: 'App\Domain\Config\Entity'
+                alias: DomainConfig
+            DomainMob:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Domain/Mob/Entity'
+                prefix: 'App\Domain\Mob\Entity'
+                alias: DomainMob
         controller_resolver:
             auto_mapping: false
 

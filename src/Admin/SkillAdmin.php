@@ -49,6 +49,7 @@ class SkillAdmin extends AbstractAdmin
             ->add('slug', TextType::class)
             ->add('description', TextareaType::class, ['required' => false])
             ->add('icon', TextType::class, ['required' => false])
+            ->add('image', null, ['required' => false])
             ->add('requiredLevel', IntegerType::class);
     }
 
@@ -56,6 +57,6 @@ class SkillAdmin extends AbstractAdmin
     {
         $show
             ->add('id')->add('name')->add('slug')
-            ->add('description')->add('icon')->add('requiredLevel');
+            ->add('description')->add('icon')->add('image')->add('requiredLevel');
     }
 }

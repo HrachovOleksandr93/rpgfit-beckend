@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Inventory\Entity;
 
+use App\Domain\Inventory\Enum\EquipmentSlot;
 use App\Domain\User\Entity\User;
 use App\Infrastructure\Inventory\Repository\UserInventoryRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -47,6 +48,10 @@ class UserInventory
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $equipped = false;
+
+    /** Which equipment slot this item occupies when equipped (null if not equipped) */
+    #[ORM\Column(type: 'string', length: 20, nullable: true, enumType: EquipmentSlot::class)]
+    private ?EquipmentSlot $equippedSlot = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $currentDurability = null;
@@ -115,6 +120,18 @@ class UserInventory
     public function setEquipped(bool $equipped): self
     {
         $this->equipped = $equipped;
+
+        return $this;
+    }
+
+    public function getEquippedSlot(): ?EquipmentSlot
+    {
+        return $this->equippedSlot;
+    }
+
+    public function setEquippedSlot(?EquipmentSlot $equippedSlot): self
+    {
+        $this->equippedSlot = $equippedSlot;
 
         return $this;
     }

@@ -145,10 +145,15 @@ class OnboardingControllerTest extends WebTestCase
         $this->assertEquals(75.0, $response['weight']);
         $this->assertSame('orc', $response['characterRace']);
         $this->assertSame('strength', $response['workoutType']);
-        $this->assertSame('moderate', $response['trainingFrequency']);
-        $this->assertSame('moderate', $response['lifestyle']);
         $this->assertTrue($response['onboardingCompleted']);
-        $this->assertSame(['powerlifting', 'crossfit'], $response['preferredWorkouts']);
+
+        // Verify training preferences are returned in separate key
+        $this->assertArrayHasKey('trainingPreferences', $response);
+        $this->assertNotNull($response['trainingPreferences']);
+        $this->assertSame('moderate', $response['trainingPreferences']['trainingFrequency']);
+        $this->assertSame('moderate', $response['trainingPreferences']['lifestyle']);
+        $this->assertSame('strength', $response['trainingPreferences']['primaryTrainingStyle']);
+        $this->assertSame(['powerlifting', 'crossfit'], $response['trainingPreferences']['preferredWorkouts']);
 
         // Verify stats are returned and sum to 30
         $this->assertArrayHasKey('stats', $response);
