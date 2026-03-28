@@ -8,6 +8,7 @@ sonata_admin:
                 items:
                     - admin.user
                     - admin.character_stats
+                    - admin.linked_account
             training:
                 label: Training Config
                 icon: '<i class="fa fa-dumbbell"></i>'

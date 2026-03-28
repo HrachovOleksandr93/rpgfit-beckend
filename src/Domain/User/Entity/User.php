@@ -10,6 +10,9 @@ use ApiPlatform\Metadata\GetCollection;
 use App\Domain\User\Enum\ActivityLevel;
 use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
+use App\Domain\User\Enum\Gender;
+use App\Domain\User\Enum\Lifestyle;
+use App\Domain\User\Enum\TrainingFrequency;
 use App\Domain\User\Enum\WorkoutType;
 use App\Infrastructure\User\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -27,13 +30,17 @@ use Symfony\Component\Uid\Uuid;
  *
  * Combines:
  * - Authentication data: login (email), hashed password, roles (Symfony Security)
- * - Physical profile: height, weight (from registration, used for health calculations)
+ * - Physical profile: height, weight, gender (from registration/onboarding)
  * - RPG profile: characterRace, workoutType preference, activityLevel, desiredGoal
+ * - Onboarding state: onboardingCompleted flag, training preferences
  *
- * Data source: created via RegistrationController (mobile app POST).
- * Exposed via: ProfileController (GET), ApiPlatform (admin API), SonataAdmin (admin panel).
+ * Data source: created via RegistrationController or OAuthController (mobile app POST).
+ * Exposed via: ProfileController (GET), UserController (GET), ApiPlatform (admin API), SonataAdmin.
  *
  * Implements UserInterface for Symfony Security (JWT authentication via lexik/jwt-auth).
+ *
+ * Fields that were previously NOT NULL are now nullable to support the OAuth flow,
+ * where a user is created before completing the onboarding questionnaire.
  */
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
@@ -60,33 +67,65 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string')]
     private string $password;
 
-    #[ORM\Column(type: 'string', length: 30, unique: true)]
+    // Nullable for OAuth flow: user may not have a display name until onboarding
+    #[ORM\Column(type: 'string', length: 30, unique: true, nullable: true)]
     #[Groups(['user:read'])]
-    private string $displayName;
+    private ?string $displayName = null;
 
-    #[ORM\Column(type: 'float')]
+    // Nullable for OAuth flow: set during onboarding
+    #[ORM\Column(type: 'float', nullable: true)]
     #[Groups(['user:read'])]
-    private float $height;
+    private ?float $height = null;
 
-    #[ORM\Column(type: 'float')]
+    // Nullable for OAuth flow: set during onboarding
+    #[ORM\Column(type: 'float', nullable: true)]
     #[Groups(['user:read'])]
-    private float $weight;
+    private ?float $weight = null;
 
-    #[ORM\Column(type: 'string', length: 20, enumType: WorkoutType::class)]
+    // Nullable for OAuth flow: set during onboarding
+    #[ORM\Column(type: 'string', length: 20, nullable: true, enumType: WorkoutType::class)]
     #[Groups(['user:read'])]
-    private WorkoutType $workoutType;
+    private ?WorkoutType $workoutType = null;
 
-    #[ORM\Column(type: 'string', length: 20, enumType: ActivityLevel::class)]
+    // Nullable for OAuth flow: set during onboarding
+    #[ORM\Column(type: 'string', length: 20, nullable: true, enumType: ActivityLevel::class)]
     #[Groups(['user:read'])]
-    private ActivityLevel $activityLevel;
+    private ?ActivityLevel $activityLevel = null;
 
-    #[ORM\Column(type: 'string', length: 20, enumType: DesiredGoal::class)]
+    // Nullable for OAuth flow: set during onboarding
+    #[ORM\Column(type: 'string', length: 20, nullable: true, enumType: DesiredGoal::class)]
     #[Groups(['user:read'])]
-    private DesiredGoal $desiredGoal;
+    private ?DesiredGoal $desiredGoal = null;
 
-    #[ORM\Column(type: 'string', length: 20, enumType: CharacterRace::class)]
+    // Nullable for OAuth flow: set during onboarding
+    #[ORM\Column(type: 'string', length: 20, nullable: true, enumType: CharacterRace::class)]
     #[Groups(['user:read'])]
-    private CharacterRace $characterRace;
+    private ?CharacterRace $characterRace = null;
+
+    // New field: user gender, collected during onboarding
+    #[ORM\Column(type: 'string', length: 10, nullable: true, enumType: Gender::class)]
+    #[Groups(['user:read'])]
+    private ?Gender $gender = null;
+
+    // New field: tracks whether the onboarding questionnaire has been completed
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    #[Groups(['user:read'])]
+    private bool $onboardingCompleted = false;
+
+    // New field: array of preferred workout slugs (e.g. running, powerlifting)
+    #[ORM\Column(type: 'json', nullable: true)]
+    #[Groups(['user:read'])]
+    private ?array $preferredWorkouts = null;
+
+    // New field: how often the user trains per week
+    #[ORM\Column(type: 'string', length: 20, nullable: true, enumType: TrainingFrequency::class)]
+    #[Groups(['user:read'])]
+    private ?TrainingFrequency $trainingFrequency = null;
+
+    // New field: daily activity level outside of training
+    #[ORM\Column(type: 'string', length: 20, nullable: true, enumType: Lifestyle::class)]
+    #[Groups(['user:read'])]
+    private ?Lifestyle $lifestyle = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
     #[Groups(['user:read'])]
@@ -132,86 +171,146 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getDisplayName(): string
+    public function getDisplayName(): ?string
     {
         return $this->displayName;
     }
 
-    public function setDisplayName(string $displayName): self
+    public function setDisplayName(?string $displayName): self
     {
         $this->displayName = $displayName;
 
         return $this;
     }
 
-    public function getHeight(): float
+    public function getHeight(): ?float
     {
         return $this->height;
     }
 
-    public function setHeight(float $height): self
+    public function setHeight(?float $height): self
     {
         $this->height = $height;
 
         return $this;
     }
 
-    public function getWeight(): float
+    public function getWeight(): ?float
     {
         return $this->weight;
     }
 
-    public function setWeight(float $weight): self
+    public function setWeight(?float $weight): self
     {
         $this->weight = $weight;
 
         return $this;
     }
 
-    public function getWorkoutType(): WorkoutType
+    public function getWorkoutType(): ?WorkoutType
     {
         return $this->workoutType;
     }
 
-    public function setWorkoutType(WorkoutType $workoutType): self
+    public function setWorkoutType(?WorkoutType $workoutType): self
     {
         $this->workoutType = $workoutType;
 
         return $this;
     }
 
-    public function getActivityLevel(): ActivityLevel
+    public function getActivityLevel(): ?ActivityLevel
     {
         return $this->activityLevel;
     }
 
-    public function setActivityLevel(ActivityLevel $activityLevel): self
+    public function setActivityLevel(?ActivityLevel $activityLevel): self
     {
         $this->activityLevel = $activityLevel;
 
         return $this;
     }
 
-    public function getDesiredGoal(): DesiredGoal
+    public function getDesiredGoal(): ?DesiredGoal
     {
         return $this->desiredGoal;
     }
 
-    public function setDesiredGoal(DesiredGoal $desiredGoal): self
+    public function setDesiredGoal(?DesiredGoal $desiredGoal): self
     {
         $this->desiredGoal = $desiredGoal;
 
         return $this;
     }
 
-    public function getCharacterRace(): CharacterRace
+    public function getCharacterRace(): ?CharacterRace
     {
         return $this->characterRace;
     }
 
-    public function setCharacterRace(CharacterRace $characterRace): self
+    public function setCharacterRace(?CharacterRace $characterRace): self
     {
         $this->characterRace = $characterRace;
+
+        return $this;
+    }
+
+    public function getGender(): ?Gender
+    {
+        return $this->gender;
+    }
+
+    public function setGender(?Gender $gender): self
+    {
+        $this->gender = $gender;
+
+        return $this;
+    }
+
+    public function isOnboardingCompleted(): bool
+    {
+        return $this->onboardingCompleted;
+    }
+
+    public function setOnboardingCompleted(bool $onboardingCompleted): self
+    {
+        $this->onboardingCompleted = $onboardingCompleted;
+
+        return $this;
+    }
+
+    public function getPreferredWorkouts(): ?array
+    {
+        return $this->preferredWorkouts;
+    }
+
+    public function setPreferredWorkouts(?array $preferredWorkouts): self
+    {
+        $this->preferredWorkouts = $preferredWorkouts;
+
+        return $this;
+    }
+
+    public function getTrainingFrequency(): ?TrainingFrequency
+    {
+        return $this->trainingFrequency;
+    }
+
+    public function setTrainingFrequency(?TrainingFrequency $trainingFrequency): self
+    {
+        $this->trainingFrequency = $trainingFrequency;
+
+        return $this;
+    }
+
+    public function getLifestyle(): ?Lifestyle
+    {
+        return $this->lifestyle;
+    }
+
+    public function setLifestyle(?Lifestyle $lifestyle): self
+    {
+        $this->lifestyle = $lifestyle;
 
         return $this;
     }

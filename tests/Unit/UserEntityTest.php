@@ -8,6 +8,9 @@ use App\Domain\User\Entity\User;
 use App\Domain\User\Enum\ActivityLevel;
 use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
+use App\Domain\User\Enum\Gender;
+use App\Domain\User\Enum\Lifestyle;
+use App\Domain\User\Enum\TrainingFrequency;
 use App\Domain\User\Enum\WorkoutType;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -56,6 +59,45 @@ class UserEntityTest extends TestCase
         $this->assertSame(CharacterRace::Orc, $user->getCharacterRace());
     }
 
+    public function testNewFieldsSettersAndGetters(): void
+    {
+        $user = new User();
+
+        // New fields default to null/false
+        $this->assertNull($user->getGender());
+        $this->assertFalse($user->isOnboardingCompleted());
+        $this->assertNull($user->getPreferredWorkouts());
+        $this->assertNull($user->getTrainingFrequency());
+        $this->assertNull($user->getLifestyle());
+
+        // Set new fields
+        $user->setGender(Gender::Male);
+        $user->setOnboardingCompleted(true);
+        $user->setPreferredWorkouts(['running', 'powerlifting']);
+        $user->setTrainingFrequency(TrainingFrequency::Moderate);
+        $user->setLifestyle(Lifestyle::Active);
+
+        $this->assertSame(Gender::Male, $user->getGender());
+        $this->assertTrue($user->isOnboardingCompleted());
+        $this->assertSame(['running', 'powerlifting'], $user->getPreferredWorkouts());
+        $this->assertSame(TrainingFrequency::Moderate, $user->getTrainingFrequency());
+        $this->assertSame(Lifestyle::Active, $user->getLifestyle());
+    }
+
+    public function testNullableFieldsDefaultToNull(): void
+    {
+        $user = new User();
+
+        // Fields that were made nullable for OAuth flow
+        $this->assertNull($user->getDisplayName());
+        $this->assertNull($user->getHeight());
+        $this->assertNull($user->getWeight());
+        $this->assertNull($user->getWorkoutType());
+        $this->assertNull($user->getActivityLevel());
+        $this->assertNull($user->getDesiredGoal());
+        $this->assertNull($user->getCharacterRace());
+    }
+
     public function testUserImplementsCorrectInterfaces(): void
     {
         $user = new User();
@@ -90,6 +132,21 @@ class UserEntityTest extends TestCase
             $user->setCharacterRace($race);
             $this->assertSame($race, $user->getCharacterRace());
         }
+
+        foreach (Gender::cases() as $gender) {
+            $user->setGender($gender);
+            $this->assertSame($gender, $user->getGender());
+        }
+
+        foreach (TrainingFrequency::cases() as $freq) {
+            $user->setTrainingFrequency($freq);
+            $this->assertSame($freq, $user->getTrainingFrequency());
+        }
+
+        foreach (Lifestyle::cases() as $ls) {
+            $user->setLifestyle($ls);
+            $this->assertSame($ls, $user->getLifestyle());
+        }
     }
 
     public function testEnumStringBackedValues(): void
@@ -97,6 +154,10 @@ class UserEntityTest extends TestCase
         $this->assertSame('cardio', WorkoutType::Cardio->value);
         $this->assertSame('strength', WorkoutType::Strength->value);
         $this->assertSame('mixed', WorkoutType::Mixed->value);
+        $this->assertSame('crossfit', WorkoutType::Crossfit->value);
+        $this->assertSame('gymnastics', WorkoutType::Gymnastics->value);
+        $this->assertSame('martial_arts', WorkoutType::MartialArts->value);
+        $this->assertSame('yoga', WorkoutType::Yoga->value);
 
         $this->assertSame('sedentary', ActivityLevel::Sedentary->value);
         $this->assertSame('very_active', ActivityLevel::VeryActive->value);
@@ -121,7 +182,12 @@ class UserEntityTest extends TestCase
             ->setWorkoutType(WorkoutType::Mixed)
             ->setActivityLevel(ActivityLevel::Moderate)
             ->setDesiredGoal(DesiredGoal::Maintain)
-            ->setCharacterRace(CharacterRace::Human);
+            ->setCharacterRace(CharacterRace::Human)
+            ->setGender(Gender::Female)
+            ->setOnboardingCompleted(true)
+            ->setPreferredWorkouts(['yoga'])
+            ->setTrainingFrequency(TrainingFrequency::Light)
+            ->setLifestyle(Lifestyle::Sedentary);
 
         $this->assertSame($user, $result);
     }

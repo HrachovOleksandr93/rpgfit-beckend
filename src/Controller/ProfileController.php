@@ -25,6 +25,7 @@ class ProfileController extends AbstractController
      * Return the authenticated user's full profile as JSON.
      *
      * Used by the mobile app to populate the profile screen and RPG character view.
+     * Handles nullable fields for users who have not completed onboarding.
      */
     #[Route('/api/profile', name: 'api_profile', methods: ['GET'])]
     public function profile(#[CurrentUser] User $user): JsonResponse
@@ -35,10 +36,11 @@ class ProfileController extends AbstractController
             'displayName' => $user->getDisplayName(),
             'height' => $user->getHeight(),
             'weight' => $user->getWeight(),
-            'workoutType' => $user->getWorkoutType()->value,
-            'activityLevel' => $user->getActivityLevel()->value,
-            'desiredGoal' => $user->getDesiredGoal()->value,
-            'characterRace' => $user->getCharacterRace()->value,
+            'workoutType' => $user->getWorkoutType()?->value,
+            'activityLevel' => $user->getActivityLevel()?->value,
+            'desiredGoal' => $user->getDesiredGoal()?->value,
+            'characterRace' => $user->getCharacterRace()?->value,
+            'onboardingCompleted' => $user->isOnboardingCompleted(),
             'createdAt' => $user->getCreatedAt()->format(\DateTimeInterface::ATOM),
             'updatedAt' => $user->getUpdatedAt()->format(\DateTimeInterface::ATOM),
         ]);

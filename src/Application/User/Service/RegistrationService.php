@@ -64,6 +64,9 @@ final class RegistrationService
         $user->setDesiredGoal($dto->desiredGoal);
         $user->setCharacterRace($dto->characterRace);
 
+        // Users registered via the standard flow have all profile data, so mark onboarding as done
+        $user->setOnboardingCompleted(true);
+
         // Hash password using Symfony's secure hasher before storing
         $hashedPassword = $this->passwordHasher->hashPassword($user, $dto->password);
         $user->setPassword($hashedPassword);

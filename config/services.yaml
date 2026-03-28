@@ -95,3 +95,8 @@ services:
         class: App\Admin\UserSkillAdmin
         tags:
             - { name: sonata.admin, model_class: App\Domain\Skill\Entity\UserSkill, manager_type: orm, label: User Skills, group: skills }
+
+    admin.linked_account:
+        class: App\Admin\LinkedAccountAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\User\Entity\LinkedAccount, manager_type: orm, label: Linked Accounts, group: users }
