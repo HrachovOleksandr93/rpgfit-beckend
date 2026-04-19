@@ -822,3 +822,91 @@ The harness never introduces a new auth path. Every request is already
 JWT-authenticated through the existing `api` firewall; `asUserId` only
 swaps the **target** of the mutation, never the **principal**.
 
+---
+
+## 14. Psych Profiler (Beta)
+
+Spec:
+[`docs/superpowers/specs/2026-04-18-psych-profiler-beta-impl.md`](./superpowers/specs/2026-04-18-psych-profiler-beta-impl.md)
+(crosslinks `BA/outputs/10-psychology-research.md`).
+
+### Feature flag
+
+- Env var `PSYCH_PROFILER_ENABLED` — default `false` in committed `.env`,
+  `true` in `.env.dev` / `.env.test`. When `false`, every
+  `/api/psych/*` path returns `404` via `PsychProfileController::assertEnabled()`.
+- Per-user toggle `PsychUserProfile.featureOptedIn` — when `false`,
+  `GET /api/psych/today` responds with `{isDue:false, reason:"not_opted_in"}`.
+
+### 3-question flow (spec §2)
+
+Q1 mood quadrant (5 options), Q2 energy 1..5, Q3 intent
+(REST / MAINTAIN / PUSH). Text-only UI — no emojis, no icons.
+
+### Status assignment (spec §3)
+
+Deterministic, first-match-wins JSON rule table stored in
+`game_settings.psych.status_rules`. Order:
+
+1. `mood == ON_EDGE` -> `SCATTERED`
+2. `mood == DRAINED` -> `WEARY`
+3. `mood in {AT_EASE, NEUTRAL} && intent == REST` -> `DORMANT`
+4. `mood == ENERGIZED && intent == PUSH && energy >= 4` -> `CHARGED`
+5. default -> `STEADY`
+
+Status is valid until the user's local midnight
+(`PsychUserProfile.statusValidUntil`). A second check-in on the same
+day is idempotent and reuses the existing row.
+
+### Skip policy
+
+Skip inherits the previous day's status and increments the consecutive
+skip counter. On the 7th consecutive skip
+(`CheckInService::SKIP_RESET_THRESHOLD`) the status is forced to
+`STEADY`. An answered check-in resets the counter to 0.
+
+### XP multipliers (spec §4) — DEFERRED WIRING
+
+`PsychStatusModifierService::getXpMultiplier(User, $activityContext)`
+returns the contextual multiplier:
+
+| Status | Context that triggers the buff | Multiplier |
+|--------|-------------------------------|-----------:|
+| CHARGED | `new_challenge` | x1.15 |
+| DORMANT | `rest` | x1.20 |
+| STEADY | — | x1.00 |
+| WEARY | — | x1.00 (never penalise) |
+| SCATTERED | — | x1.00 (never penalise) |
+
+**Integration TODO:** wire `PsychStatusModifierService` into
+`BattleResultCalculator` and the workout XP pipeline **after** the beta
+cohort reports back. Leaving it unwired keeps the hot battle path
+untouched while the feature flag is off. Red lines: no damage-taken
+multiplier, no XP/streak for the check-in itself.
+
+### Crisis detection (spec §1 decision 1)
+
+`CrisisDetectionService::hasCrisisPattern(User)` returns `true` when 5
+of the last 7 calendar days were WEARY or SCATTERED. Emits a
+`psych.crisis-pattern` `LoggerInterface::warning` with a 30-day per-user
+cooldown stored in `game_settings.psych.crisis_last_flagged_{userId}`.
+No user-facing nudge in beta — admin spots it through the log channel.
+
+### Privacy / GDPR
+
+- Retention: `psych.retention_days` = 180. Planned `app:psych-purge`
+  command deletes rows older than this cutoff.
+- Export: `GET /api/psych/export` returns the user's profile + all
+  check-ins as JSON (Art. 20).
+- Hard erase: `DELETE /api/psych/history` returns 204 after wiping all
+  check-ins and resetting the profile counters (Art. 17).
+- Soft opt-out: `POST /api/psych/opt-out?erase=1` erases check-ins in
+  addition to flipping `featureOptedIn=false`.
+
+### Test-harness integration
+
+`POST /api/test/psych/seed` (tester+) seeds N back-dated check-ins with
+a given status so Playwright can trigger crisis-detection without
+waiting real days. Respects both the `APP_TESTING_ENABLED` kill-switch
+and `PSYCH_PROFILER_ENABLED`.
+

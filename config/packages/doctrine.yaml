@@ -91,6 +91,12 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Domain/Test/Entity'
                 prefix: 'App\Domain\Test\Entity'
                 alias: DomainTest
+            DomainPsychProfile:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Domain/PsychProfile/Entity'
+                prefix: 'App\Domain\PsychProfile\Entity'
+                alias: DomainPsychProfile
         controller_resolver:
             auto_mapping: false
 
