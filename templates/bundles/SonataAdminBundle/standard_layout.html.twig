@@ -1,0 +1,18 @@
+{#
+ # VERA-ICS Admin — standard layout override
+ # ------------------------------------------
+ # Extends Sonata's default layout without duplicating any markup.
+ # Only appends the Vector Field stylesheet after Sonata's default assets,
+ # plus a favicon link. All other blocks inherit from the parent template.
+ #
+ # See: docs/design/07-vector-field/concept.md
+ #}
+{% extends '@!SonataAdmin/standard_layout.html.twig' %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {# Vector Field restyle — cascade-layer override, always loaded last #}
+    <link rel="stylesheet" href="{{ asset('assets/admin/vector-field.css') }}">
+    {# Favicon (deferred binary asset — served only if present on disk) #}
+    <link rel="icon" type="image/x-icon" href="{{ asset('assets/admin/favicon.ico') }}">
+{% endblock %}
