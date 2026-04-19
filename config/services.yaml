@@ -40,6 +40,7 @@ services:
             - '../src/Domain/Battle/Enum/'
             - '../src/Domain/Test/Entity/'
             - '../src/Domain/Test/Enum/'
+            - '../src/Application/Test/DTO/'
             - '../src/Kernel.php'
 
     # add more service definitions when explicit configuration is needed

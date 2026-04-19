@@ -748,3 +748,77 @@ admin-curated item referenced by that slug carries the realm.
 
 - Unit: `tests/Unit/ArtifactRealmMultiplierTest.php` covers
   match / mismatch / null-realm paths and the `1.4×` multiplier arithmetic.
+
+---
+
+## 13. Test Harness (Phase 6)
+
+Added 2026-04-18. The test harness is a dedicated `/api/test/*` surface
+used by QA, testers, and Playwright to drive the app into arbitrary
+states without going through slow real-world flows (HealthKit observers,
+actual workouts, inventory grinds).
+
+**Authoritative spec:** `docs/superpowers/specs/2026-04-18-test-harness-spec.md`.
+
+### Scope (21 endpoints)
+
+- Inventory: `grant`, `clear`, `equipment/equip`, `equipment/unequip`
+- XP / Level: `xp/grant`, `level/set`, `level/grant`, `stats/set`
+- Health: `health/inject`, `health/clear`
+- Workout: `workout/log`, `workout/simulate-stream`
+- Battle: `battle/simulate`
+- Portal: `portal/spawn-near-me`
+- User: `user/state`, `user/reset?hard=1`
+- Event: `event/trigger` (admin+)
+- Meta: `meta/enable?ttl_min=60`, `meta/disable`, `meta/status`
+  (superadmin for enable/disable; tester for status)
+- Audit: `audit/recent?limit=50` (admin+)
+
+### Kill-switches (spec §6.3, §11 Q7)
+
+1. **Env var `APP_TESTING_ENABLED`** — `false` in committed `.env`,
+   `true` in `.env.dev` / `.env.test`. When `false`, every
+   `/api/test/*` path returns `404` via `TestHarnessKillSwitchListener`.
+2. **Runtime override via `GameSetting`** — a superadmin can open the
+   harness in prod for `ttl_min` minutes by calling
+   `POST /api/test/meta/enable?ttl_min=60`. The override is stored in
+   two `GameSetting` rows (`test_harness.enabled`,
+   `test_harness.expires_at`) and auto-reverts via
+   `php bin/console app:testing-check` (cron: every minute).
+
+### Role policy (spec §5, §6)
+
+- `ROLE_USER` -> 403 on any `/api/test/*` path.
+- `ROLE_TESTER` -> self-mutation only. `asUserId` in query/body => 403.
+- `ROLE_ADMIN` -> can mutate any user when passing `asUserId` + a
+  canonical `reason` (enum `App\Domain\Test\Enum\ReasonEnum`).
+- `ROLE_SUPERADMIN` -> additionally can flip the kill-switch at runtime.
+
+All role enforcement is centralised in
+`App\Application\Test\Service\TargetUserResolver` — controllers never
+read `asUserId` directly.
+
+### `?force=1` semantics
+
+Only relaxes **business caps** (e.g. `xp_daily_cap`,
+`level.grant` 5-level-per-call guard). Never relaxes database
+constraints (FK, unique keys, NOT NULL) — those stay authoritative.
+
+### Audit trail (spec §3.11, §11 Q4)
+
+Every mutation writes one row to `admin_action_logs` via
+`AdminActionLogService::record()`. No external webhook in beta; the
+admin reads the trail via Sonata or `GET /api/test/audit/recent`.
+
+### Rate limit (spec §6.2)
+
+60 requests/min/user, enforced per endpoint call by
+`TestHarnessRateLimiter` (PSR-6 cache-backed sliding-window). Returns
+`429 Too Many Requests` with `Retry-After` on breach.
+
+### Not inherited from OAuthController (spec §6.5)
+
+The harness never introduces a new auth path. Every request is already
+JWT-authenticated through the existing `api` firewall; `asUserId` only
+swaps the **target** of the mutation, never the **principal**.
+

@@ -249,4 +249,34 @@ Update `app/_layout.tsx` to provide the new theme.
   theme visible on onboarding + profile + health.
 - **Phase 3 done:** `/` renders landing with 07 design, admin login screen
   uses IBM Plex + copper accent.
+
+---
+
+## Phase 6 — Test Harness Endpoints (Backend Developer)
+
+**Spec:** `docs/superpowers/specs/2026-04-18-test-harness-spec.md`
+
+- [x] Feature flag `APP_TESTING_ENABLED` + `TestHarnessGate` service
+  (env + `GameSetting` runtime override with TTL).
+- [x] `TestHarnessKillSwitchListener` short-circuits `/api/test/*` to 404
+  when the gate is off (except `/api/test/meta/*`).
+- [x] `TestHarnessRateLimiter` — 60 req/min/user, PSR-6 cache-backed.
+- [x] `AbstractTestController` base: resolver + audit + gate + rate limiter.
+- [x] 21 endpoints across 10 controllers under `src/Controller/Test/`
+  (inventory x2, equipment x2, xp, level x2, stats, health x2, workout x2,
+  battle, portal, user x2, event, meta x3, audit).
+- [x] `TestingCheckCommand` — `app:testing-check` cron auto-revert.
+- [x] `.env` default `false`; `.env.dev` + `.env.test` set `true`.
+- [x] Functional tests in `tests/Functional/Test/*ControllerTest.php`.
+- [x] `docs/BUSINESS_LOGIC.md §13` — cross-link to spec + kill-switch + role
+  policy summary.
+- [ ] Frontend debug drawer (Phase 3 of spec — separate RN work, not part
+  of this backend phase).
+- [ ] Playwright fixtures (Phase 4 of spec — see `plan4b-e2e`).
+
+### Deferred
+
+- `/api/test/event/trigger` currently stubbed: the D5 social-event service
+  doesn't exist yet. The controller still authorizes + audits; payload
+  reports `triggered=false` with a TODO note.
 - **Phase 4 done:** 8+ Playwright tests passing, coverage report generated.
