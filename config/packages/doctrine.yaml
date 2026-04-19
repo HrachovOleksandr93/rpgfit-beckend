@@ -79,6 +79,12 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Domain/Battle/Entity'
                 prefix: 'App\Domain\Battle\Entity'
                 alias: DomainBattle
+            DomainPortal:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Domain/Portal/Entity'
+                prefix: 'App\Domain\Portal\Entity'
+                alias: DomainPortal
         controller_resolver:
             auto_mapping: false
 
