@@ -7,7 +7,6 @@ namespace App\Tests\Unit;
 use App\Domain\Character\Enum\StatType;
 use App\Domain\Skill\Entity\Skill;
 use App\Domain\Skill\Entity\SkillStatBonus;
-use App\Domain\User\Enum\CharacterRace;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Uuid;
 
@@ -106,7 +105,7 @@ class SkillEntityTest extends TestCase
             ->setTier(1)
             ->setIsUniversal(true)
             ->setIsRaceSkill(false)
-            ->setRaceRestriction(CharacterRace::Human);
+            ->setRaceRestriction('human');
 
         $this->assertSame($skill, $result);
     }
@@ -159,15 +158,15 @@ class SkillEntityTest extends TestCase
         $this->assertNull($skill->getCooldown());
     }
 
-    /** Test race restriction enum field. */
+    /** Test legacy race restriction string field (races removed 2026-04-18). */
     public function testRaceRestrictionField(): void
     {
         $skill = new Skill();
 
         $this->assertNull($skill->getRaceRestriction());
 
-        $skill->setRaceRestriction(CharacterRace::Orc);
-        $this->assertSame(CharacterRace::Orc, $skill->getRaceRestriction());
+        $skill->setRaceRestriction('orc');
+        $this->assertSame('orc', $skill->getRaceRestriction());
 
         $skill->setRaceRestriction(null);
         $this->assertNull($skill->getRaceRestriction());

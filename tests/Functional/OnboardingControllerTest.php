@@ -6,7 +6,6 @@ namespace App\Tests\Functional;
 
 use App\Domain\User\Entity\User;
 use App\Domain\User\Enum\ActivityLevel;
-use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\WorkoutType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -68,7 +67,6 @@ class OnboardingControllerTest extends AbstractFunctionalTest
         $user->setWorkoutType(WorkoutType::Cardio);
         $user->setActivityLevel(ActivityLevel::Active);
         $user->setDesiredGoal(DesiredGoal::LoseWeight);
-        $user->setCharacterRace(CharacterRace::Orc);
         $user->setOnboardingCompleted(true);
         $user->setPassword($hasher->hashPassword($user, 'TempPass123'));
 
@@ -93,7 +91,6 @@ class OnboardingControllerTest extends AbstractFunctionalTest
             'height' => 180.5,
             'weight' => 75.0,
             'gender' => 'male',
-            'characterRace' => 'orc',
             'trainingFrequency' => 'moderate',
             'workoutType' => 'strength',
             'lifestyle' => 'moderate',
@@ -124,7 +121,6 @@ class OnboardingControllerTest extends AbstractFunctionalTest
         $this->assertSame('male', $response['gender']);
         $this->assertEquals(180.5, $response['height']);
         $this->assertEquals(75.0, $response['weight']);
-        $this->assertSame('orc', $response['characterRace']);
         $this->assertSame('strength', $response['workoutType']);
         $this->assertTrue($response['onboardingCompleted']);
 

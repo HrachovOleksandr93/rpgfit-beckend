@@ -9,7 +9,6 @@ use App\Domain\Activity\Entity\ProfessionSkill;
 use App\Domain\Character\Enum\StatType;
 use App\Domain\Skill\Entity\Skill;
 use App\Domain\Skill\Entity\SkillStatBonus;
-use App\Domain\User\Enum\CharacterRace;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -21,8 +20,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 /**
  * Console command to seed all RPG skills and profession-skill links.
  *
- * Populates the database with 39 unique skills (5 race passives, 2 universal actives,
+ * Populates the database with 34 unique skills (2 universal actives,
  * 32 profession skills across 3 tiers) and links them to the 48 professions.
+ * Race passive skills were removed per founder decision D4 (2026-04-18).
  * Idempotent by default: skips existing slugs. Use --clear to delete and re-seed.
  *
  * Usage: php bin/console app:seed-skills [--clear]
@@ -56,24 +56,20 @@ class SeedSkillsCommand extends Command
             $io->info('Existing skill data cleared.');
         }
 
-        // Step 1: Seed race passive skills
+        // Step 1: Seed universal active skills
         $skillMap = [];
-        $raceCount = $this->seedRaceSkills($io, $skillMap);
-
-        // Step 2: Seed universal active skills
         $universalCount = $this->seedUniversalSkills($io, $skillMap);
 
-        // Step 3: Seed profession skills (T1, T2, T3 passives and actives)
+        // Step 2: Seed profession skills (T1, T2, T3 passives and actives)
         $professionSkillCount = $this->seedProfessionSkills($io, $skillMap);
 
-        // Step 4: Link skills to professions via ProfessionSkill
+        // Step 3: Link skills to professions via ProfessionSkill
         $linkCount = $this->seedProfessionSkillLinks($io, $skillMap);
 
         $this->entityManager->flush();
 
         $io->success(sprintf(
-            'Seeding complete! Race skills: %d, Universal skills: %d, Profession skills: %d, Profession-skill links: %d',
-            $raceCount,
+            'Seeding complete! Universal skills: %d, Profession skills: %d, Profession-skill links: %d',
             $universalCount,
             $professionSkillCount,
             $linkCount,
@@ -93,80 +89,6 @@ class SeedSkillsCommand extends Command
         $conn->executeStatement('DELETE FROM skill_stat_bonuses');
         $conn->executeStatement('DELETE FROM user_skills');
         $conn->executeStatement('DELETE FROM skills');
-    }
-
-    /**
-     * Seed the 5 race passive skills from the design document.
-     *
-     * @param array<string, Skill> $skillMap Slug-indexed map of created skills
-     * @return int Number of skills created
-     */
-    private function seedRaceSkills(SymfonyStyle $io, array &$skillMap): int
-    {
-        $raceSkills = [
-            [
-                'slug' => 'versatile-nature',
-                'name' => 'Versatile Nature',
-                'race' => CharacterRace::Human,
-                'bonuses' => ['str' => 2, 'dex' => 2, 'con' => 2],
-                'description' => 'Humans adapt to any challenge. A balanced bonus to all attributes reflects their jack-of-all-trades heritage.',
-            ],
-            [
-                'slug' => 'blood-of-the-horde',
-                'name' => 'Blood of the Horde',
-                'race' => CharacterRace::Orc,
-                'bonuses' => ['str' => 4, 'con' => 1],
-                'description' => 'Orcs are born with savage power coursing through their veins. Brute strength is their birthright.',
-            ],
-            [
-                'slug' => 'mountain-born',
-                'name' => 'Mountain Born',
-                'race' => CharacterRace::Dwarf,
-                'bonuses' => ['str' => 2, 'con' => 3],
-                'description' => 'Dwarves are carved from the stone of the deep mountains — sturdy, unbreakable, and impossible to move.',
-            ],
-            [
-                'slug' => 'shadow-instinct',
-                'name' => 'Shadow Instinct',
-                'race' => CharacterRace::DarkElf,
-                'bonuses' => ['str' => 1, 'dex' => 4],
-                'description' => 'Dark Elves move with lethal quickness honed in the lightless depths of the underworld.',
-            ],
-            [
-                'slug' => 'sylvan-grace',
-                'name' => 'Sylvan Grace',
-                'race' => CharacterRace::LightElf,
-                'bonuses' => ['dex' => 3, 'con' => 2],
-                'description' => 'Light Elves carry the flowing grace of the ancient forests — nimble and enduring as the wind through the trees.',
-            ],
-        ];
-
-        $count = 0;
-        foreach ($raceSkills as $data) {
-            $existing = $this->entityManager->getRepository(Skill::class)->findOneBy(['slug' => $data['slug']]);
-            if ($existing) {
-                $skillMap[$data['slug']] = $existing;
-                $io->text(sprintf('  Skipping existing race skill: %s', $data['name']));
-                continue;
-            }
-
-            $skill = new Skill();
-            $skill->setName($data['name'])
-                ->setSlug($data['slug'])
-                ->setDescription($data['description'])
-                ->setSkillType('passive')
-                ->setIsRaceSkill(true)
-                ->setRaceRestriction($data['race']);
-
-            $this->addStatBonuses($skill, $data['bonuses']);
-
-            $this->entityManager->persist($skill);
-            $skillMap[$data['slug']] = $skill;
-            $count++;
-            $io->text(sprintf('  Created race skill: %s', $data['name']));
-        }
-
-        return $count;
     }
 
     /**

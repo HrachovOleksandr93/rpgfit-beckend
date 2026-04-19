@@ -86,7 +86,6 @@ class UserController extends AbstractController
             'gender' => $user->getGender()?->value,
             'height' => $user->getHeight(),
             'weight' => $user->getWeight(),
-            'characterRace' => $user->getCharacterRace()?->value,
             'workoutType' => $user->getWorkoutType()?->value,
             'activityLevel' => $user->getActivityLevel()?->value,
             'desiredGoal' => $user->getDesiredGoal()?->value,

@@ -7,7 +7,6 @@ namespace App\Tests\Functional;
 use App\Domain\Config\Entity\GameSetting;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Enum\ActivityLevel;
-use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\WorkoutType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -71,7 +70,6 @@ class HealthControllerTest extends AbstractFunctionalTest
         $user->setWorkoutType(WorkoutType::Cardio);
         $user->setActivityLevel(ActivityLevel::Active);
         $user->setDesiredGoal(DesiredGoal::LoseWeight);
-        $user->setCharacterRace(CharacterRace::Orc);
         $user->setPassword($hasher->hashPassword($user, $password));
 
         $em->persist($user);

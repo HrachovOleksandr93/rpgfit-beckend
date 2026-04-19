@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Admin;
 
 use App\Domain\User\Enum\ActivityLevel;
-use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\WorkoutType;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
@@ -22,8 +21,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
  * Sonata Admin for managing User entities via the admin panel.
  *
  * Allows admins to view, edit, and delete users. Displays account info (login, displayName),
- * physical data (height, weight), and RPG profile (character race, workout type, activity level,
- * desired goal). Password cannot be changed via admin (only via API).
+ * physical data (height, weight), and RPG profile (workout type, activity level, desired goal).
+ * Password cannot be changed via admin (only via API).
  *
  * @extends AbstractAdmin<\App\Domain\User\Entity\User>
  */
@@ -34,7 +33,6 @@ class UserAdmin extends AbstractAdmin
         $list
             ->addIdentifier('login')
             ->add('displayName')
-            ->add('characterRace', null, ['template' => null])
             ->add('workoutType', null, ['template' => null])
             ->add('activityLevel', null, ['template' => null])
             ->add('createdAt')
@@ -60,12 +58,6 @@ class UserAdmin extends AbstractAdmin
                 ->add('weight', NumberType::class)
             ->end()
             ->with('RPG Profile', ['class' => 'col-md-6'])
-                ->add('characterRace', ChoiceType::class, [
-                    'choices' => array_combine(
-                        array_map(fn($r) => $r->name, CharacterRace::cases()),
-                        CharacterRace::cases()
-                    ),
-                ])
                 ->add('workoutType', ChoiceType::class, [
                     'choices' => array_combine(
                         array_map(fn($t) => $t->name, WorkoutType::cases()),
@@ -92,7 +84,7 @@ class UserAdmin extends AbstractAdmin
         $show
             ->add('id')->add('login')->add('displayName')
             ->add('height')->add('weight')
-            ->add('characterRace')->add('workoutType')
+            ->add('workoutType')
             ->add('activityLevel')->add('desiredGoal')
             ->add('createdAt')->add('updatedAt');
     }

@@ -9,7 +9,6 @@ use App\Application\User\DTO\OnboardingDTO;
 use App\Domain\Character\Entity\CharacterStats;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Entity\UserTrainingPreference;
-use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\Gender;
 use App\Domain\User\Enum\Lifestyle;
 use App\Domain\User\Enum\TrainingFrequency;
@@ -62,7 +61,6 @@ final class OnboardingService
         $user->setHeight($dto->height);
         $user->setWeight($dto->weight);
         $user->setGender(Gender::from($dto->gender));
-        $user->setCharacterRace(CharacterRace::from($dto->characterRace));
         $user->setWorkoutType(WorkoutType::from($dto->workoutType));
 
         // Step 3: Create training preferences (separate entity)

@@ -62,7 +62,6 @@ final class RegistrationService
         $user->setWorkoutType($dto->workoutType);
         $user->setActivityLevel($dto->activityLevel);
         $user->setDesiredGoal($dto->desiredGoal);
-        $user->setCharacterRace($dto->characterRace);
 
         // Users registered via the standard flow have all profile data, so mark onboarding as done
         $user->setOnboardingCompleted(true);

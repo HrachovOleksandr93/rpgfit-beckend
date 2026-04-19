@@ -6,7 +6,6 @@ namespace App\Tests\Unit;
 
 use App\Domain\User\Entity\User;
 use App\Domain\User\Enum\ActivityLevel;
-use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\Gender;
 use App\Domain\User\Enum\WorkoutType;
@@ -44,7 +43,6 @@ class UserEntityTest extends TestCase
         $user->setWorkoutType(WorkoutType::Cardio);
         $user->setActivityLevel(ActivityLevel::Active);
         $user->setDesiredGoal(DesiredGoal::LoseWeight);
-        $user->setCharacterRace(CharacterRace::Orc);
 
         $this->assertSame('test@example.com', $user->getLogin());
         $this->assertSame('hashed_password', $user->getPassword());
@@ -54,7 +52,6 @@ class UserEntityTest extends TestCase
         $this->assertSame(WorkoutType::Cardio, $user->getWorkoutType());
         $this->assertSame(ActivityLevel::Active, $user->getActivityLevel());
         $this->assertSame(DesiredGoal::LoseWeight, $user->getDesiredGoal());
-        $this->assertSame(CharacterRace::Orc, $user->getCharacterRace());
     }
 
     public function testNewFieldsSettersAndGetters(): void
@@ -84,7 +81,6 @@ class UserEntityTest extends TestCase
         $this->assertNull($user->getWorkoutType());
         $this->assertNull($user->getActivityLevel());
         $this->assertNull($user->getDesiredGoal());
-        $this->assertNull($user->getCharacterRace());
     }
 
     public function testUserImplementsCorrectInterfaces(): void
@@ -117,11 +113,6 @@ class UserEntityTest extends TestCase
             $this->assertSame($goal, $user->getDesiredGoal());
         }
 
-        foreach (CharacterRace::cases() as $race) {
-            $user->setCharacterRace($race);
-            $this->assertSame($race, $user->getCharacterRace());
-        }
-
         foreach (Gender::cases() as $gender) {
             $user->setGender($gender);
             $this->assertSame($gender, $user->getGender());
@@ -144,10 +135,6 @@ class UserEntityTest extends TestCase
         $this->assertSame('lose_weight', DesiredGoal::LoseWeight->value);
         $this->assertSame('gain_mass', DesiredGoal::GainMass->value);
         $this->assertSame('maintain', DesiredGoal::Maintain->value);
-
-        $this->assertSame('human', CharacterRace::Human->value);
-        $this->assertSame('dark_elf', CharacterRace::DarkElf->value);
-        $this->assertSame('light_elf', CharacterRace::LightElf->value);
     }
 
     public function testSetterChaining(): void
@@ -161,7 +148,6 @@ class UserEntityTest extends TestCase
             ->setWorkoutType(WorkoutType::Mixed)
             ->setActivityLevel(ActivityLevel::Moderate)
             ->setDesiredGoal(DesiredGoal::Maintain)
-            ->setCharacterRace(CharacterRace::Human)
             ->setGender(Gender::Female)
             ->setOnboardingCompleted(true);
 

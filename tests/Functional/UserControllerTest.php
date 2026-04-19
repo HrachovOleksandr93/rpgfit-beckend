@@ -7,7 +7,6 @@ namespace App\Tests\Functional;
 use App\Domain\Character\Entity\CharacterStats;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Enum\ActivityLevel;
-use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\Gender;
 use App\Domain\User\Entity\UserTrainingPreference;
@@ -46,7 +45,6 @@ class UserControllerTest extends AbstractFunctionalTest
         $user->setWorkoutType(WorkoutType::Strength);
         $user->setActivityLevel(ActivityLevel::Active);
         $user->setDesiredGoal(DesiredGoal::GainMass);
-        $user->setCharacterRace(CharacterRace::Orc);
         $user->setOnboardingCompleted(true);
         $user->setPassword($hasher->hashPassword($user, 'SecurePass123'));
 
@@ -126,7 +124,6 @@ class UserControllerTest extends AbstractFunctionalTest
         $this->assertSame('male', $response['gender']);
         $this->assertEquals(180.0, $response['height']);
         $this->assertEquals(75.5, $response['weight']);
-        $this->assertSame('orc', $response['characterRace']);
         $this->assertSame('strength', $response['workoutType']);
         $this->assertSame('active', $response['activityLevel']);
         $this->assertSame('gain_mass', $response['desiredGoal']);

@@ -19,7 +19,6 @@ class RegistrationControllerTest extends AbstractFunctionalTest
             'workoutType' => 'cardio',
             'activityLevel' => 'active',
             'desiredGoal' => 'lose_weight',
-            'characterRace' => 'orc',
         ], $overrides);
     }
 
@@ -48,7 +47,6 @@ class RegistrationControllerTest extends AbstractFunctionalTest
         $this->assertSame('cardio', $response['workoutType']);
         $this->assertSame('active', $response['activityLevel']);
         $this->assertSame('lose_weight', $response['desiredGoal']);
-        $this->assertSame('orc', $response['characterRace']);
         $this->assertArrayHasKey('createdAt', $response);
         $this->assertArrayHasKey('updatedAt', $response);
 
@@ -135,7 +133,6 @@ class RegistrationControllerTest extends AbstractFunctionalTest
                 'workoutType' => 'invalid',
                 'activityLevel' => 'invalid',
                 'desiredGoal' => 'invalid',
-                'characterRace' => 'invalid',
             ]),
         );
 

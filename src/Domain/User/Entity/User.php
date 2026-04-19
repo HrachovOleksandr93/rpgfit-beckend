@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use App\Domain\User\Enum\ActivityLevel;
-use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\Gender;
 use App\Domain\User\Enum\WorkoutType;
@@ -29,7 +28,7 @@ use Symfony\Component\Uid\Uuid;
  * Combines:
  * - Authentication data: login (email), hashed password, roles (Symfony Security)
  * - Physical profile: height, weight, gender (from registration/onboarding)
- * - RPG profile: characterRace, workoutType preference, activityLevel, desiredGoal
+ * - RPG profile: workoutType preference, activityLevel, desiredGoal
  * - Onboarding state: onboardingCompleted flag, training preferences
  *
  * Data source: created via RegistrationController or OAuthController (mobile app POST).
@@ -94,11 +93,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 20, nullable: true, enumType: DesiredGoal::class)]
     #[Groups(['user:read'])]
     private ?DesiredGoal $desiredGoal = null;
-
-    // Nullable for OAuth flow: set during onboarding
-    #[ORM\Column(type: 'string', length: 20, nullable: true, enumType: CharacterRace::class)]
-    #[Groups(['user:read'])]
-    private ?CharacterRace $characterRace = null;
 
     // New field: user gender, collected during onboarding
     #[ORM\Column(type: 'string', length: 10, nullable: true, enumType: Gender::class)]
@@ -222,18 +216,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setDesiredGoal(?DesiredGoal $desiredGoal): self
     {
         $this->desiredGoal = $desiredGoal;
-
-        return $this;
-    }
-
-    public function getCharacterRace(): ?CharacterRace
-    {
-        return $this->characterRace;
-    }
-
-    public function setCharacterRace(?CharacterRace $characterRace): self
-    {
-        $this->characterRace = $characterRace;
 
         return $this;
     }

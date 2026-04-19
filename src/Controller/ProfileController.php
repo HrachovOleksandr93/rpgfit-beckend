@@ -39,7 +39,6 @@ class ProfileController extends AbstractController
             'workoutType' => $user->getWorkoutType()?->value,
             'activityLevel' => $user->getActivityLevel()?->value,
             'desiredGoal' => $user->getDesiredGoal()?->value,
-            'characterRace' => $user->getCharacterRace()?->value,
             'onboardingCompleted' => $user->isOnboardingCompleted(),
             'createdAt' => $user->getCreatedAt()->format(\DateTimeInterface::ATOM),
             'updatedAt' => $user->getUpdatedAt()->format(\DateTimeInterface::ATOM),

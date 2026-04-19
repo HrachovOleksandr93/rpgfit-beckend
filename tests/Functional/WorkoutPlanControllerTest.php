@@ -8,7 +8,6 @@ use App\Domain\Character\Entity\CharacterStats;
 use App\Domain\Config\Entity\GameSetting;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Enum\ActivityLevel;
-use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\WorkoutType;
 use App\Domain\Workout\Entity\Exercise;
@@ -536,7 +535,6 @@ class WorkoutPlanControllerTest extends AbstractFunctionalTest
         $user->setWorkoutType(WorkoutType::Strength);
         $user->setActivityLevel(ActivityLevel::Active);
         $user->setDesiredGoal(DesiredGoal::LoseWeight);
-        $user->setCharacterRace(CharacterRace::Orc);
         $user->setPassword($hasher->hashPassword($user, $password));
 
         $em->persist($user);

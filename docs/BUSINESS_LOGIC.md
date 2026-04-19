@@ -8,7 +8,7 @@ The mobile app sends a single JSON payload with account credentials and full RPG
 
 1. **RegistrationController** parses JSON into `RegistrationDTO`
 2. Symfony Validator checks constraints: email format, password >= 8 chars, display name 3-30 chars, all required fields present
-3. Enum strings (workoutType, activityLevel, desiredGoal, characterRace) are converted via `::tryFrom()`
+3. Enum strings (workoutType, activityLevel, desiredGoal) are converted via `::tryFrom()`
 4. **RegistrationService** checks uniqueness of login (email) and display name against the database
 5. Creates `User` entity, hashes password (bcrypt/argon2 via Symfony password hasher)
 6. Sets `onboardingCompleted = true` (standard registration collects all data upfront)
@@ -48,7 +48,6 @@ Required for OAuth users who were created without profile data. Can only be call
 - `displayName` (3-30 chars, alphanumeric + underscore only)
 - `height` (50-300 cm), `weight` (20-500 kg)
 - `gender` (male/female)
-- `characterRace` (human/orc/dwarf/dark_elf/light_elf)
 - `workoutType` (cardio/strength/mixed/crossfit/gymnastics/martial_arts/yoga)
 - `trainingFrequency` (none/light/moderate/heavy)
 - `lifestyle` (sedentary/moderate/active/very_active)
@@ -106,9 +105,13 @@ Required for OAuth users who were created without profile data. Can only be call
 
 **Example:** A strength/active/heavy user gets base 5+5+5=15, workout +5+1+2=8, lifestyle +1+1+1=3, frequency +1+1+1=3, raw total = 29. Deficit of 1 goes to strength (highest). Final: STR=12, DEX=8, CON=10.
 
-### Race Passives
+### Race Passives (REMOVED 2026-04-18)
 
-Each race has 5 passive skills (always active, providing stat bonuses). These are seeded by `app:seed-skills` and auto-applied based on the user's `characterRace`. Race skills have `is_race_skill = true` and `race_restriction` set.
+Character races were removed per founder decision D4 (2026-04-18). The 5
+race passive skills (Versatile Nature, Blood of the Horde, Mountain Born,
+Shadow Instinct, Sylvan Grace) are no longer seeded. The `characterRace`
+column on `users` was dropped, and onboarding no longer collects race.
+Existing user-skill links to race skills are removed by migration.
 
 ### Level Progression
 
@@ -228,7 +231,7 @@ Maximum 3000 XP per day from health sync (configurable via `xp_daily_cap`). Batt
 
 ### Skill Categories
 
-1. **Race skills** (5 per race, 25 total): Passive, always active, restricted to one race via `race_restriction`. Flagged with `is_race_skill = true`.
+1. **Race skills** — REMOVED 2026-04-18. Previously 5 race passives per character; races have been cut from the game (D4). The `race_restriction` / `is_race_skill` columns on the `skills` table remain for backward compatibility but are no longer populated by seeders.
 
 2. **Universal skills** (2 total): Active skills (have duration and cooldown), available to all players. Flagged with `is_universal = true`.
 
@@ -704,3 +707,44 @@ Settings are managed via the Sonata Admin "Game Settings" panel (under the Confi
 Two commands populate initial settings:
 - `app:seed-battle-settings`: Battle tick frequency, damage factors, performance thresholds
 - `app:seed-workout-settings`: Exercises per session, base XP, anomaly thresholds, XP rates
+
+---
+
+## 12. Artifact Realm Binding (Damage Multiplier)
+
+Added 2026-04-18. Ties the Mob and Inventory domains through the shared
+`Realm` enum (`App\Domain\Shared\Enum\Realm`).
+
+### Rule
+
+Each `ItemCatalog` row may carry an optional `realm` column. During battle
+result calculation, if **any equipped artifact's realm equals the current
+mob's realm**, the total damage is multiplied by **1.4** (+40%).
+
+Implementation: `BattleResultCalculator::applyRealmMatchMultiplier()` is
+invoked immediately after the base damage is computed, using the equipped
+inventory list and `WorkoutSession::getMob()->getRealm()`.
+
+| Scenario | Artifact realm | Mob realm | Outcome |
+|----------|----------------|-----------|---------|
+| Match | `olympus` | `olympus` | damage × 1.4 |
+| Mismatch | `asgard` | `olympus` | damage × 1.0 |
+| Unbound | `null` | any | damage × 1.0 |
+| No mob realm | any | `null` | damage × 1.0 |
+
+### Why not per-artifact stacking?
+
+The rule is "at least one matches" rather than "sum of matching artifacts"
+to keep the calculation deterministic and the UI readable. Multiple
+matching artifacts do **not** stack the multiplier.
+
+### Data seeding
+
+Artifact realm is set by admins in Sonata ("Items"). Portal rewards in
+`data/portals/static.yaml` set the `reward_artifact_slug`, and the
+admin-curated item referenced by that slug carries the realm.
+
+### Testing
+
+- Unit: `tests/Unit/ArtifactRealmMultiplierTest.php` covers
+  match / mismatch / null-realm paths and the `1.4×` multiplier arithmetic.
