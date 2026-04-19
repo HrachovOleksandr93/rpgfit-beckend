@@ -83,6 +83,10 @@ class UserController extends AbstractController
             'id' => $user->getId()->toRfc4122(),
             'login' => $user->getLogin(),
             'displayName' => $user->getDisplayName(),
+            // Full role list (hierarchy-resolved by the entity getter, so
+            // ROLE_USER is always present). Consumed by the mobile client's
+            // role-based feature gating in the test harness.
+            'roles' => $user->getRoles(),
             'gender' => $user->getGender()?->value,
             'height' => $user->getHeight(),
             'weight' => $user->getWeight(),

@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\GetCollection;
 use App\Domain\User\Enum\ActivityLevel;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\Gender;
+use App\Domain\User\Enum\UserRole;
 use App\Domain\User\Enum\WorkoutType;
 use App\Infrastructure\User\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -103,6 +104,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     #[Groups(['user:read'])]
     private bool $onboardingCompleted = false;
+
+    /**
+     * Security roles owned by this user. ROLE_USER is always present at
+     * runtime (enforced in `getRoles()`), but stored explicitly so the
+     * DB row remains self-describing.
+     *
+     * No DB-level default — MySQL JSON columns reject defaults. The PHP
+     * default keeps new entities compliant, and the migration backfills
+     * existing rows.
+     *
+     * @var list<string>
+     */
+    #[ORM\Column(type: 'json')]
+    #[Groups(['user:read'])]
+    private array $roles = ['ROLE_USER'];
 
     #[ORM\Column(type: 'datetime_immutable')]
     #[Groups(['user:read'])]
@@ -263,10 +279,66 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     // --- Symfony Security UserInterface methods ---
 
-    /** All users have ROLE_USER. Admin roles are managed separately. */
+    /**
+     * Return the deduplicated role list, guaranteeing ROLE_USER is present
+     * even if the stored array is empty or tampered with.
+     *
+     * @return list<string>
+     */
     public function getRoles(): array
     {
-        return ['ROLE_USER'];
+        return array_values(array_unique(array_merge($this->roles, ['ROLE_USER'])));
+    }
+
+    /**
+     * Replace the stored role list. Callers should provide canonical
+     * ROLE_* strings; ROLE_USER is always re-added by `getRoles()`.
+     *
+     * @param list<string> $roles
+     */
+    public function setRoles(array $roles): self
+    {
+        // Normalize: strings only, deduplicate, preserve order.
+        $normalized = [];
+        foreach ($roles as $role) {
+            if (!is_string($role) || $role === '') {
+                continue;
+            }
+            if (!in_array($role, $normalized, true)) {
+                $normalized[] = $role;
+            }
+        }
+
+        $this->roles = $normalized;
+
+        return $this;
+    }
+
+    /** Add a role if not already present. */
+    public function addRole(UserRole $role): self
+    {
+        if (!in_array($role->value, $this->roles, true)) {
+            $this->roles[] = $role->value;
+        }
+
+        return $this;
+    }
+
+    /** Remove a role. ROLE_USER cannot be removed and is silently preserved by `getRoles()`. */
+    public function removeRole(UserRole $role): self
+    {
+        $this->roles = array_values(array_filter(
+            $this->roles,
+            static fn (string $existing): bool => $existing !== $role->value,
+        ));
+
+        return $this;
+    }
+
+    /** Strict role-presence check against the stored list (no hierarchy resolution). */
+    public function hasRole(UserRole $role): bool
+    {
+        return in_array($role->value, $this->getRoles(), true);
     }
 
     public function eraseCredentials(): void

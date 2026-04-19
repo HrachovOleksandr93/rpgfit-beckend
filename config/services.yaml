@@ -38,6 +38,8 @@ services:
             - '../src/Domain/Workout/Enum/'
             - '../src/Domain/Battle/Entity/'
             - '../src/Domain/Battle/Enum/'
+            - '../src/Domain/Test/Entity/'
+            - '../src/Domain/Test/Enum/'
             - '../src/Kernel.php'
 
     # add more service definitions when explicit configuration is needed
@@ -45,6 +47,8 @@ services:
 
     admin.user:
         class: App\Admin\UserAdmin
+        arguments:
+            $security: '@Symfony\Bundle\SecurityBundle\Security'
         tags:
             - { name: sonata.admin, model_class: App\Domain\User\Entity\User, manager_type: orm, label: Users, group: users }
 

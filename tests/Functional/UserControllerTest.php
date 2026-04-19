@@ -12,6 +12,7 @@ use App\Domain\User\Enum\Gender;
 use App\Domain\User\Entity\UserTrainingPreference;
 use App\Domain\User\Enum\Lifestyle;
 use App\Domain\User\Enum\TrainingFrequency;
+use App\Domain\User\Enum\UserRole;
 use App\Domain\User\Enum\WorkoutType;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -182,5 +183,34 @@ class UserControllerTest extends AbstractFunctionalTest
         $this->assertNull($response['gender']);
         $this->assertNull($response['height']);
         $this->assertNull($response['weight']);
+    }
+
+    public function testGetUserReturnsRoles(): void
+    {
+        $user = $this->createFullUser();
+
+        // Promote to tester to verify the full list is emitted.
+        $user->addRole(UserRole::TESTER);
+        $em = self::getContainer()->get('doctrine')->getManager();
+        $em->flush();
+
+        $token = $this->getJwtToken($user);
+
+        $this->client->request(
+            'GET',
+            self::USER_URL,
+            [],
+            [],
+            ['HTTP_AUTHORIZATION' => 'Bearer ' . $token],
+        );
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+
+        $this->assertArrayHasKey('roles', $response);
+        $this->assertIsArray($response['roles']);
+        $this->assertContains(UserRole::USER->value, $response['roles']);
+        $this->assertContains(UserRole::TESTER->value, $response['roles']);
     }
 }
