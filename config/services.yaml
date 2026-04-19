@@ -29,6 +29,10 @@ services:
             - '../src/Domain/Media/Entity/'
             - '../src/Domain/Config/Entity/'
             - '../src/Domain/Mob/Entity/'
+            - '../src/Domain/Mob/Enum/'
+            - '../src/Domain/Portal/Entity/'
+            - '../src/Domain/Portal/Enum/'
+            - '../src/Domain/Shared/Enum/'
             - '../src/Domain/Activity/Entity/'
             - '../src/Domain/Workout/Entity/'
             - '../src/Domain/Workout/Enum/'
@@ -128,6 +132,11 @@ services:
         class: App\Admin\MobAdmin
         tags:
             - { name: sonata.admin, model_class: App\Domain\Mob\Entity\Mob, manager_type: orm, label: Mobs, group: mobs }
+
+    admin.portal:
+        class: App\Admin\PortalAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Portal\Entity\Portal, manager_type: orm, label: Portals, group: portals }
 
     admin.activity_category:
         class: App\Admin\ActivityCategoryAdmin
