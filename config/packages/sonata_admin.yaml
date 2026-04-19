@@ -41,6 +41,11 @@ sonata_admin:
                 icon: '<i class="fa fa-skull"></i>'
                 items:
                     - admin.mob
+            portals:
+                label: Portals
+                icon: '<i class="fa fa-map-marker"></i>'
+                items:
+                    - admin.portal
             professions:
                 label: Professions
                 icon: '<i class="fa fa-shield"></i>'
