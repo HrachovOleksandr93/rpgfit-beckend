@@ -108,7 +108,20 @@ class ArtifactRealmMultiplierTest extends TestCase
             levelingService: (new \ReflectionClass(LevelingService::class))->newInstanceWithoutConstructor(),
             experienceLogRepository: $this->createMock(ExperienceLogRepository::class),
             entityManager: $this->createMock(EntityManagerInterface::class),
+            psychModifier: $this->stubPsychModifier(),
         );
+    }
+
+    /**
+     * Returns a PsychStatusModifierService that always returns 1.0 —
+     * realm-match tests don't exercise the psych path.
+     */
+    private function stubPsychModifier(): \App\Application\PsychProfile\Service\PsychStatusModifierService
+    {
+        $stub = $this->createMock(\App\Application\PsychProfile\Service\PsychStatusModifierService::class);
+        $stub->method('getXpMultiplier')->willReturn(1.0);
+
+        return $stub;
     }
 
     private function makeItem(?Realm $realm): ItemCatalog

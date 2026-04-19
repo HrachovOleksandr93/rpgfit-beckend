@@ -28,7 +28,7 @@ use App\Infrastructure\PsychProfile\Repository\PsychUserProfileRepository;
  * BUSINESS_LOGIC.md §14 for the integration plan. Left unwired in this
  * PR to avoid touching the hot battle path behind a disabled feature.
  */
-final class PsychStatusModifierService
+class PsychStatusModifierService
 {
     public const SETTING_KEY = 'psych.xp_multipliers';
     public const CONTEXT_NEW_CHALLENGE = 'new_challenge';

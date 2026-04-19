@@ -54,6 +54,7 @@ class BattleResultCalculator
         private readonly LevelingService $levelingService,
         private readonly ExperienceLogRepository $experienceLogRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly \App\Application\PsychProfile\Service\PsychStatusModifierService $psychModifier,
     ) {
     }
 
@@ -555,15 +556,27 @@ class BattleResultCalculator
      */
     private function awardXp(\App\Domain\User\Entity\User $user, int $xpAmount, WorkoutSession $session): array
     {
+        // Apply psych status multiplier (1.00 when feature off / not opted in).
+        // Battle context per §4 of the psych spec — CHARGED gets +15% for
+        // new-challenge battles; other statuses keep 1.0 on battles.
+        $multiplier = $this->psychModifier->getXpMultiplier(
+            $user,
+            \App\Application\PsychProfile\Service\PsychStatusModifierService::CONTEXT_BATTLE,
+        );
+        if ($multiplier !== 1.0) {
+            $xpAmount = (int) round($xpAmount * $multiplier);
+        }
+
         // Create experience log entry
         $log = new ExperienceLog();
         $log->setUser($user);
         $log->setAmount($xpAmount);
         $log->setSource('battle');
         $log->setDescription(sprintf(
-            'Battle result: %s (%s mode)',
+            'Battle result: %s (%s mode, psych ×%.2f)',
             $session->getPerformanceTier() ?? 'unknown',
             $session->getMode()->value,
+            $multiplier,
         ));
         $this->entityManager->persist($log);
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Character\Service;
 
+use App\Application\PsychProfile\Service\PsychStatusModifierService;
 use App\Domain\Character\Entity\CharacterStats;
 use App\Domain\Character\Entity\ExperienceLog;
 use App\Domain\Health\Enum\HealthDataType;
@@ -25,6 +26,7 @@ final class XpAwardService
         private readonly LevelingService $levelingService,
         private readonly ExperienceLogRepository $experienceLogRepository,
         private readonly CharacterStatsRepository $characterStatsRepository,
+        private readonly PsychStatusModifierService $psychModifier,
     ) {
     }
 
@@ -40,6 +42,14 @@ final class XpAwardService
     {
         // Calculate XP (with daily cap applied)
         $xpAwarded = $this->xpCalculationService->calculateDailyXp($healthDataPoints);
+
+        // Apply psych status multiplier (1.00 when feature off / not opted in).
+        // Health-sync XP counts as "workout" context per §4 of the psych spec —
+        // sleep/steps/activity already normalised by XpCalculationService.
+        $multiplier = $this->psychModifier->getXpMultiplier($user, PsychStatusModifierService::CONTEXT_WORKOUT);
+        if ($multiplier !== 1.0) {
+            $xpAwarded = (int) round($xpAwarded * $multiplier);
+        }
 
         if ($xpAwarded <= 0) {
             $stats = $this->getOrCreateStats($user);
@@ -58,7 +68,10 @@ final class XpAwardService
         $log->setUser($user);
         $log->setAmount($xpAwarded);
         $log->setSource('health_sync');
-        $log->setDescription('XP from health data sync');
+        $log->setDescription(sprintf(
+            'XP from health data sync (psych ×%.2f)',
+            $multiplier,
+        ));
         $this->experienceLogRepository->save($log);
 
         // Update character stats
