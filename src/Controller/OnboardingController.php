@@ -7,7 +7,6 @@ namespace App\Controller;
 use App\Application\User\DTO\OnboardingDTO;
 use App\Application\User\Service\OnboardingService;
 use App\Domain\User\Entity\User;
-use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\Gender;
 use App\Domain\User\Enum\Lifestyle;
 use App\Domain\User\Enum\TrainingFrequency;
@@ -76,7 +75,6 @@ class OnboardingController extends AbstractController
         $dto->height = isset($data['height']) ? (float) $data['height'] : null;
         $dto->weight = isset($data['weight']) ? (float) $data['weight'] : null;
         $dto->gender = $data['gender'] ?? '';
-        $dto->characterRace = $data['characterRace'] ?? '';
         $dto->trainingFrequency = $data['trainingFrequency'] ?? '';
         $dto->workoutType = $data['workoutType'] ?? '';
         $dto->lifestyle = $data['lifestyle'] ?? '';
@@ -102,9 +100,6 @@ class OnboardingController extends AbstractController
 
         if (Gender::tryFrom($dto->gender) === null) {
             $enumErrors['gender'][] = 'Invalid gender value.';
-        }
-        if (CharacterRace::tryFrom($dto->characterRace) === null) {
-            $enumErrors['characterRace'][] = 'Invalid character race value.';
         }
         if (WorkoutType::tryFrom($dto->workoutType) === null) {
             $enumErrors['workoutType'][] = 'Invalid workout type value.';
@@ -144,7 +139,6 @@ class OnboardingController extends AbstractController
             'gender' => $user->getGender()?->value,
             'height' => $user->getHeight(),
             'weight' => $user->getWeight(),
-            'characterRace' => $user->getCharacterRace()?->value,
             'workoutType' => $user->getWorkoutType()?->value,
             'activityLevel' => $user->getActivityLevel()?->value,
             'desiredGoal' => $user->getDesiredGoal()?->value,

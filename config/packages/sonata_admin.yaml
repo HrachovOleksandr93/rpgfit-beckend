@@ -1,54 +1,67 @@
 sonata_admin:
-    title: 'RPGFit Admin'
+    # VERA-ICS brand — 07 Vector Field restyle (Phase 3B)
+    title: 'VERA-ICS · Admin'
+    # title_logo: '/assets/admin/logo.svg' # enable once SVG asset is committed
     dashboard:
+        # Domain-oriented ordering:
+        # 1) Users & auth
+        # 2) Game content (mobs, portals, artifacts/inventory, skills)
+        # 3) Activities (workouts, exercises, health)
+        # 4) Battle & progression (XP, logs, professions)
+        # 5) Media
         groups:
             users:
-                label: Users
+                label: Users & Auth
                 icon: '<i class="fa fa-users"></i>'
                 items:
                     - admin.user
                     - admin.character_stats
                     - admin.linked_account
-            training:
-                label: Training Config
-                icon: '<i class="fa fa-dumbbell"></i>'
+            game_content_mobs:
+                label: Game · Mobs
+                icon: '<i class="fa fa-skull"></i>'
                 items:
-                    - admin.workout_category
-                    - admin.exercise_type
-                    - admin.exercise_stat_reward
-            logs:
-                label: Logs
-                icon: '<i class="fa fa-list"></i>'
+                    - admin.mob
+            game_content_portals:
+                label: Game · Portals
+                icon: '<i class="fa fa-map-marker"></i>'
                 items:
-                    - admin.experience_log
-                    - admin.workout_log
-            skills:
-                label: Skills
-                icon: '<i class="fa fa-magic"></i>'
-                items:
-                    - admin.skill
-                    - admin.skill_stat_bonus
-                    - admin.user_skill
-            inventory:
-                label: Inventory
+                    - admin.portal
+            game_content_inventory:
+                label: Game · Inventory
                 icon: '<i class="fa fa-box"></i>'
                 items:
                     - admin.item_catalog
                     - admin.item_stat_bonus
                     - admin.user_inventory
-            mobs:
-                label: Mobs
-                icon: '<i class="fa fa-skull"></i>'
+            game_content_skills:
+                label: Game · Skills
+                icon: '<i class="fa fa-magic"></i>'
                 items:
-                    - admin.mob
-            professions:
-                label: Professions
+                    - admin.skill
+                    - admin.skill_stat_bonus
+                    - admin.user_skill
+            activities_training:
+                label: Activities · Training
+                icon: '<i class="fa fa-dumbbell"></i>'
+                items:
+                    - admin.workout_category
+                    - admin.exercise_type
+                    - admin.exercise_stat_reward
+            activities_professions:
+                label: Activities · Professions
                 icon: '<i class="fa fa-shield"></i>'
                 items:
                     - admin.activity_category
                     - admin.profession
                     - admin.activity_type
                     - admin.user_profession
+            battle_progression:
+                label: Battle & Progression
+                icon: '<i class="fa fa-list"></i>'
+                items:
+                    - admin.experience_log
+                    - admin.workout_log
             media:
                 label: Media
                 icon: '<i class="fa fa-image"></i>'

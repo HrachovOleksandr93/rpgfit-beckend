@@ -8,6 +8,7 @@ use App\Domain\Inventory\Enum\EquipmentSlot;
 use App\Domain\Inventory\Enum\ItemRarity;
 use App\Domain\Inventory\Enum\ItemType;
 use App\Domain\Media\Entity\MediaFile;
+use App\Domain\Shared\Enum\Realm;
 use App\Infrastructure\Inventory\Repository\ItemCatalogRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -53,6 +54,14 @@ class ItemCatalog
 
     #[ORM\Column(type: 'string', length: 20, enumType: ItemRarity::class)]
     private ItemRarity $rarity;
+
+    /**
+     * Realm this artifact is bound to, if any. When `realm === mob.realm`
+     * the BattleResultCalculator applies +40% damage (BUSINESS_LOGIC §12).
+     * Null means unbound / generic gear.
+     */
+    #[ORM\Column(type: 'string', length: 20, nullable: true, enumType: Realm::class)]
+    private ?Realm $realm = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $icon = null;
@@ -152,6 +161,18 @@ class ItemCatalog
     public function setRarity(ItemRarity $rarity): self
     {
         $this->rarity = $rarity;
+
+        return $this;
+    }
+
+    public function getRealm(): ?Realm
+    {
+        return $this->realm;
+    }
+
+    public function setRealm(?Realm $realm): self
+    {
+        $this->realm = $realm;
 
         return $this;
     }

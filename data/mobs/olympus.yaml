@@ -1,0 +1,569 @@
+# Olympus realm pilot — 40 mobs from BA/outputs/09-mob-bestiary.md §3
+# Source: Theoi.com, Wikipedia Greek creatures, God of War wiki.
+# Realm vibe: marble + gold, lightning-plasma, bronze armor, laurel, aegean-blue.
+
+realm: olympus
+mobs:
+  # --- Class I (20 mobs) ---
+  - slug: satyr_marsh
+    name_ua: "Сатир-браконьєр"
+    name_en: "Marsh Satyr"
+    rarity: common
+    realm: olympus
+    class_tier: I
+    behavior: physical
+    archetype: humanoid
+    visual_keywords: [goat-legs, flute-shard, wine-stained]
+    accepts_champion: true
+    flavor_ua: "Розгромив фуршет у йога-ретріті; тепер полює на біжучі доріжки."
+    flavor_en: "Raided a yoga retreat's snack table; now hunts treadmills."
+    level_range: [1, 5, 1]
+
+  - slug: dryad_sapling
+    name_ua: "Лісова Німфа"
+    name_en: "Dryad Sapling"
+    rarity: common
+    realm: olympus
+    class_tier: I
+    behavior: physical
+    archetype: spirit
+    visual_keywords: [bark-skin, leaf-hair, sap-tears]
+    accepts_champion: false
+    flavor_ua: "Дріада, чия олива згоріла по той бік Тріщини."
+    flavor_en: "A dryad whose olive tree burned on the other side."
+    level_range: [1, 5, 1]
+
+  - slug: oceanid_drifter
+    name_ua: "Океаніда"
+    name_en: "Oceanid Drifter"
+    rarity: common
+    realm: olympus
+    class_tier: I
+    behavior: ritual
+    archetype: spirit
+    visual_keywords: [seafoam-veil, coral-crown, salt-drip]
+    accepts_champion: false
+    flavor_ua: "Пливе українськими річками, сподіваючись вийти назад до Егейського моря."
+    flavor_en: "Rides Ukrainian rivers hoping one leads back to the Aegean."
+    level_range: [1, 5, 1]
+
+  - slug: ciconian_raider
+    name_ua: "Кікон-мародер"
+    name_en: "Ciconian Raider"
+    rarity: common
+    realm: olympus
+    class_tier: I
+    behavior: physical
+    archetype: humanoid
+    visual_keywords: [bronze-spear, wolf-pelt, war-paint]
+    accepts_champion: true
+    flavor_ua: "Фракійський налітник, що застряг у нас від самого Дня Розколу."
+    flavor_en: "Thracian raider stuck on our side since the Rupture opened."
+    level_range: [2, 6, 1]
+
+  - slug: stymphalian_bird
+    name_ua: "Стимфалійська Пташка"
+    name_en: "Stymphalian Bird"
+    rarity: uncommon
+    realm: olympus
+    class_tier: I
+    behavior: physical
+    archetype: beast
+    visual_keywords: [bronze-beak, metal-feathers, red-eyes]
+    accepts_champion: true
+    flavor_ua: "Одна втекла від стріл Геракла; шість проскочили через Тріщину."
+    flavor_en: "One fled Hercules' arrows; six came through the Rupture."
+    level_range: [3, 7, 1]
+
+  - slug: lernaean_leech
+    name_ua: "Лерна-Слиз"
+    name_en: "Lernean Leech"
+    rarity: common
+    realm: olympus
+    class_tier: I
+    behavior: physical
+    archetype: swarm
+    visual_keywords: [black-bile, toothed-maw, regen]
+    accepts_champion: false
+    flavor_ua: "Нащадок Гідри без самої Гідри. Усе ще відроджується."
+    flavor_en: "Hydra-spawn without the hydra. Still regenerates."
+    level_range: [2, 6, 1]
+
+  - slug: harpy_carrion
+    name_ua: "Гарпія-падальник"
+    name_en: "Carrion Harpy"
+    rarity: uncommon
+    realm: olympus
+    class_tier: I
+    behavior: physical
+    archetype: chimera
+    visual_keywords: [woman-face, vulture-body, reek]
+    accepts_champion: true
+    flavor_ua: "Живиться тим, що витікає з Тріщини; смердить сіркою."
+    flavor_en: "Feeds on what Rupture-leaks behind; stinks of sulphur."
+    level_range: [3, 7, 1]
+
+  - slug: centaur_exile
+    name_ua: "Кентавр-вигнанець"
+    name_en: "Exile Centaur"
+    rarity: uncommon
+    realm: olympus
+    class_tier: I
+    behavior: physical
+    archetype: chimera
+    visual_keywords: [pine-bow, horse-lower, scarred-torso]
+    accepts_champion: true
+    flavor_ua: "Вигнаний лінією Хірона за надто охоче куштування людського вина."
+    flavor_en: "Cast out by Chiron's line for tasting human wine too often."
+    level_range: [3, 7, 1]
+
+  - slug: minotaur_calf
+    name_ua: "Мінотавр-теля"
+    name_en: "Minotaur Calf"
+    rarity: uncommon
+    realm: olympus
+    class_tier: I
+    behavior: physical
+    archetype: chimera
+    visual_keywords: [young-horns, labyrinth-brand, bawl]
+    accepts_champion: true
+    flavor_ua: "Втік через Кносську Тріщину. Дороги додому не знає."
+    flavor_en: "Escaped the Knossos Rupture. Does not know the way home."
+    level_range: [3, 7, 1]
+
+  - slug: cyclops_shepherd
+    name_ua: "Циклоп-пастух"
+    name_en: "Shepherd Cyclops"
+    rarity: uncommon
+    realm: olympus
+    class_tier: I
+    behavior: physical
+    archetype: humanoid
+    visual_keywords: [single-eye, sheep-skin, club]
+    accepts_champion: true
+    flavor_ua: "Досі рахує отару, яка вже не його."
+    flavor_en: "Still counts a flock that is no longer his."
+    level_range: [4, 8, 1]
+
+  - slug: erinys_shade
+    name_ua: "Еріні-тінь"
+    name_en: "Erinys Shade"
+    rarity: rare
+    realm: olympus
+    class_tier: II
+    behavior: ritual
+    archetype: spirit
+    visual_keywords: [black-wings, whip-of-fire, eyeless]
+    accepts_champion: false
+    flavor_ua: "Зобов'язана покарати клятвопорушника, чиє ім'я загублене."
+    flavor_en: "Bound to punish an oath-breaker whose name is lost."
+    level_range: [8, 14, 1]
+
+  - slug: lamia_changeling
+    name_ua: "Ламія-підміняшка"
+    name_en: "Lamia Changeling"
+    rarity: uncommon
+    realm: olympus
+    class_tier: I
+    behavior: ritual
+    archetype: chimera
+    visual_keywords: [snake-coil, woman-upper, forked-tongue]
+    accepts_champion: true
+    flavor_ua: "Краде колиски в Одесі; лишає глиняне немовля натомість."
+    flavor_en: "Steals cribs in Odesa; leaves a clay infant in return."
+    level_range: [4, 8, 1]
+
+  - slug: empusa
+    name_ua: "Емпуса"
+    name_en: "Empusa"
+    rarity: uncommon
+    realm: olympus
+    class_tier: I
+    behavior: physical
+    archetype: spirit
+    visual_keywords: [bronze-leg, donkey-leg, fire-hair]
+    accepts_champion: false
+    flavor_ua: "Кошмар на службі Гекати, тепер блукає метро-тунелями."
+    flavor_en: "A nightmare in Hecate's service, now loose in subway tunnels."
+    level_range: [4, 8, 1]
+
+  - slug: keres_flock
+    name_ua: "Кер-духи"
+    name_en: "Keres Flock"
+    rarity: uncommon
+    realm: olympus
+    class_tier: I
+    behavior: physical
+    archetype: swarm
+    visual_keywords: [blood-teeth, leather-wings, death-stench]
+    accepts_champion: false
+    flavor_ua: "Пожирачі поля бою; йдуть за сиренами швидкої."
+    flavor_en: "Battlefield-eaters; follow sirens of ambulances."
+    level_range: [4, 8, 1]
+
+  - slug: telchine
+    name_ua: "Телхін"
+    name_en: "Telchine"
+    rarity: common
+    realm: olympus
+    class_tier: I
+    behavior: ritual
+    archetype: humanoid
+    visual_keywords: [flipper-hands, verdigris-skin, hammer]
+    accepts_champion: true
+    flavor_ua: "Демон-коваль з острова; кує прокляті амулети зі сміттєвих металів."
+    flavor_en: "Island smith-daemon; forges bad-luck charms from scrap."
+    level_range: [2, 6, 1]
+
+  - slug: spartan_revenant
+    name_ua: "Канеф-спартанець"
+    name_en: "Spartan Revenant"
+    rarity: uncommon
+    realm: olympus
+    class_tier: I
+    behavior: physical
+    archetype: undead
+    visual_keywords: [bronze-hoplite, shield-split, dust]
+    accepts_champion: true
+    flavor_ua: "Загинув при Фермопілах, повернувся, думаючи, що битва триває."
+    flavor_en: "Died at Thermopylae, came through thinking the war resumed."
+    level_range: [5, 10, 1]
+
+  - slug: ichthyocentaur
+    name_ua: "Іхтіоцентавр"
+    name_en: "Ichthyocentaur"
+    rarity: uncommon
+    realm: olympus
+    class_tier: I
+    behavior: physical
+    archetype: chimera
+    visual_keywords: [fish-tail, horse-front, man-torso]
+    accepts_champion: true
+    flavor_ua: "Народжений в Егейському морі; виринає тепер у Чорному."
+    flavor_en: "Aegean-born; surfaces in Black Sea now."
+    level_range: [4, 9, 1]
+
+  - slug: laestrygonian_scout
+    name_ua: "Лестригон-розвідник"
+    name_en: "Laestrygonian Scout"
+    rarity: uncommon
+    realm: olympus
+    class_tier: I
+    behavior: physical
+    archetype: humanoid
+    visual_keywords: [giant-stature, raw-hide, boulder-sling]
+    accepts_champion: true
+    flavor_ua: "Розвідник племені людожерів; сáме плем'я йде слідом."
+    flavor_en: "Scout of a cannibal tribe; the tribe follows behind."
+    level_range: [5, 10, 1]
+
+  - slug: maenad_frenzy
+    name_ua: "Меналад"
+    name_en: "Maenad Frenzy"
+    rarity: uncommon
+    realm: olympus
+    class_tier: I
+    behavior: ritual
+    archetype: humanoid
+    visual_keywords: [thyrsus, ivy-crown, blood-grin]
+    accepts_champion: true
+    flavor_ua: "Культистка Діоніса в екстазі; крутить палицю з шишкою."
+    flavor_en: "Dionysian cultist mid-ecstasy; swings a pinecone-staff."
+    level_range: [4, 9, 1]
+
+  - slug: aura_wraith
+    name_ua: "Аурa-примара"
+    name_en: "Aura Wraith"
+    rarity: common
+    realm: olympus
+    class_tier: I
+    behavior: ritual
+    archetype: spirit
+    visual_keywords: [wind-form, translucent, chill-breath]
+    accepts_champion: false
+    flavor_ua: "Німфа-вітер; забула, що колись була супутницею Артеміди."
+    flavor_en: "Breeze-nymph who forgot she once was Artemis' companion."
+    level_range: [1, 6, 1]
+
+  # --- Class II (12 mobs) ---
+  - slug: minotaur
+    name_ua: "Мінотавр"
+    name_en: "Minotaur"
+    rarity: rare
+    realm: olympus
+    class_tier: II
+    behavior: physical
+    archetype: chimera
+    visual_keywords: [bull-head, labrys, gold-ring-nose]
+    accepts_champion: true
+    flavor_ua: "Господар лабіринту; його лабіринт тепер — наші квартали."
+    flavor_en: "The labyrinth's lord; his maze is now our city blocks."
+    level_range: [12, 18, 1]
+
+  - slug: medusa
+    name_ua: "Медуза"
+    name_en: "Medusa"
+    rarity: rare
+    realm: olympus
+    class_tier: II
+    behavior: ritual
+    archetype: chimera
+    visual_keywords: [snake-hair, petrifying-gaze, bronze-scales]
+    accepts_champion: true
+    flavor_ua: "Досі красива жорстокою красою; дзеркала рятують життя."
+    flavor_en: "Still beautiful in a cruel way; mirrors save lives."
+    level_range: [14, 20, 1]
+
+  - slug: cerberus_pup
+    name_ua: "Цербер (щеня)"
+    name_en: "Cerberus Pup"
+    rarity: rare
+    realm: olympus
+    class_tier: II
+    behavior: physical
+    archetype: beast
+    visual_keywords: [three-heads, drool-acid, chain-collar]
+    accepts_champion: true
+    flavor_ua: "Одне з цуценят Цербера вислизнуло з поводка Аїда."
+    flavor_en: "One of Cerberus' pups slipped the leash of Hades."
+    level_range: [12, 18, 1]
+
+  - slug: chimera_gk
+    name_ua: "Химера"
+    name_en: "Chimera"
+    rarity: rare
+    realm: olympus
+    class_tier: II
+    behavior: physical
+    archetype: chimera
+    visual_keywords: [lion-head, goat-spine, snake-tail, flame]
+    accepts_champion: true
+    flavor_ua: "Беллерофонт не вполював її. Вона старша й розлюченіша."
+    flavor_en: "Bellerophon missed one. It is older and angrier."
+    level_range: [14, 20, 1]
+
+  - slug: scylla
+    name_ua: "Сцилла"
+    name_en: "Scylla"
+    rarity: rare
+    realm: olympus
+    class_tier: II
+    behavior: physical
+    archetype: chimera
+    visual_keywords: [six-necks, hound-waists, ship-splinter]
+    accepts_champion: false
+    flavor_ua: "Прадавня пожирачка протоків; з'являється там, де ріки вливаються в море."
+    flavor_en: "Ancient strait-eater; appears where rivers meet the sea."
+    level_range: [15, 22, 1]
+
+  - slug: charybdis
+    name_ua: "Харібда"
+    name_en: "Charybdis"
+    rarity: rare
+    realm: olympus
+    class_tier: II
+    behavior: ritual
+    archetype: spirit
+    visual_keywords: [whirlpool-form, kelp-mouth, undertow]
+    accepts_champion: false
+    flavor_ua: "Не стільки істота, скільки голодне місце."
+    flavor_en: "Not a creature so much as a hungry place."
+    level_range: [15, 22, 1]
+
+  - slug: gorgon_euryale
+    name_ua: "Горгона Евріала"
+    name_en: "Euryale"
+    rarity: rare
+    realm: olympus
+    class_tier: II
+    behavior: physical
+    archetype: chimera
+    visual_keywords: [bronze-wings, boar-tusks, sister-wail]
+    accepts_champion: true
+    flavor_ua: "Сестра Медузи. Безсмертна. Стогне. Шукає."
+    flavor_en: "Medusa's sister. Immortal. Wailing. Looking."
+    level_range: [14, 20, 1]
+
+  - slug: nemean_lion
+    name_ua: "Немейський Лев"
+    name_en: "Nemean Lion"
+    rarity: rare
+    realm: olympus
+    class_tier: II
+    behavior: physical
+    archetype: beast
+    visual_keywords: [golden-hide, arrow-proof, silent-paws]
+    accepts_champion: true
+    flavor_ua: "Його шкуру досі неможливо пробити; лише задушити."
+    flavor_en: "Its pelt still cannot be pierced; only choked."
+    level_range: [13, 19, 1]
+
+  - slug: hydra_lernaean
+    name_ua: "Лернейська Гідра"
+    name_en: "Lernaean Hydra"
+    rarity: rare
+    realm: olympus
+    class_tier: II
+    behavior: physical
+    archetype: chimera
+    visual_keywords: [nine-heads, venom-bile, swamp-stench]
+    accepts_champion: true
+    flavor_ua: "Зрубаєш голову — виросте дві. Вогонь — досі єдина відповідь."
+    flavor_en: "Cut one head, two grow. Flame is still the only answer."
+    level_range: [15, 22, 1]
+
+  - slug: ceryneian_hind
+    name_ua: "Керін-олениця"
+    name_en: "Ceryneian Hind"
+    rarity: rare
+    realm: olympus
+    class_tier: II
+    behavior: physical
+    archetype: beast
+    visual_keywords: [gold-antlers, bronze-hooves, Artemis-mark]
+    accepts_champion: false
+    flavor_ua: "Священна олениця Артеміди; полювання на неї — досі святотатство."
+    flavor_en: "Artemis' sacred stag; hunting her is still sacrilege."
+    level_range: [12, 18, 1]
+
+  - slug: hercules_revenant
+    name_ua: "Геракл-сам-собі"
+    name_en: "Hercules Revenant"
+    rarity: rare
+    realm: olympus
+    class_tier: II
+    behavior: physical
+    archetype: humanoid
+    visual_keywords: [lion-cloak, club, muscle-mountain]
+    accepts_champion: true
+    flavor_ua: "Напівбог, який думає, що Дванадцять подвигів ще не завершено."
+    flavor_en: "A demigod who thinks the Twelve Labours are not over."
+    level_range: [16, 22, 1]
+
+  - slug: achilles_shade
+    name_ua: "Ахіллес-тінь"
+    name_en: "Achilles Shade"
+    rarity: rare
+    realm: olympus
+    class_tier: II
+    behavior: physical
+    archetype: undead
+    visual_keywords: [bronze-greaves, heel-wound, spear-of-Pelion]
+    accepts_champion: true
+    flavor_ua: "Воскрес, щоб довершити сварку, яку його кістки забули."
+    flavor_en: "Risen to finish a quarrel his bones forgot."
+    level_range: [16, 22, 1]
+
+  # --- Class III (6 mobs) ---
+  - slug: typhon_scion
+    name_ua: "Тифон-пагін"
+    name_en: "Typhon Scion"
+    rarity: epic
+    realm: olympus
+    class_tier: III
+    behavior: team
+    archetype: chimera
+    visual_keywords: [hundred-serpent-legs, storm-wings, molten-eyes]
+    accepts_champion: true
+    flavor_ua: "Соту частина Тифона, і вона вже більша за автобус."
+    flavor_en: "One hundredth of Typhon, still bigger than a bus."
+    level_range: [30, 40, 2]
+
+  - slug: hecatoncheires
+    name_ua: "Гекатонхейр"
+    name_en: "Hecatoncheires"
+    rarity: epic
+    realm: olympus
+    class_tier: III
+    behavior: team
+    archetype: humanoid
+    visual_keywords: [fifty-heads, hundred-arms, mountain-grip]
+    accepts_champion: true
+    flavor_ua: "Сторукий; жбурляє валуни у мобільні вежі."
+    flavor_en: "Hundred-handed one; throws boulders at cell-towers."
+    level_range: [30, 40, 2]
+
+  - slug: helios_charioteer
+    name_ua: "Геліос-колісниця"
+    name_en: "Helios Charioteer"
+    rarity: epic
+    realm: olympus
+    class_tier: III
+    behavior: ritual
+    archetype: divine
+    visual_keywords: [solar-disc, fire-mane, gold-chariot]
+    accepts_champion: true
+    flavor_ua: "Дрібний прислужник сонця, що їде нашим північним сяйвом."
+    flavor_en: "A minor sun-servant who drives through our aurora."
+    level_range: [28, 38, 2]
+
+  - slug: atalanta_hunter
+    name_ua: "Аталанта-гончар"
+    name_en: "Atalanta the Hunter"
+    rarity: epic
+    realm: olympus
+    class_tier: III
+    behavior: physical
+    archetype: humanoid
+    visual_keywords: [bear-hide, bronze-bow, golden-apples]
+    accepts_champion: true
+    flavor_ua: "Напівбогиня полювання; досі ганяє за бігунами."
+    flavor_en: "Demi-goddess of the hunt; still chases foot-racers."
+    level_range: [28, 38, 2]
+
+  - slug: triton
+    name_ua: "Трітон"
+    name_en: "Triton"
+    rarity: epic
+    realm: olympus
+    class_tier: III
+    behavior: physical
+    archetype: chimera
+    visual_keywords: [conch-horn, fish-tail, coral-trident]
+    accepts_champion: true
+    flavor_ua: "Син Посейдона; їде на повені крізь зливові каналізації."
+    flavor_en: "Poseidon's son; rides floodwater through storm drains."
+    level_range: [28, 38, 2]
+
+  - slug: proteus
+    name_ua: "Протей"
+    name_en: "Proteus"
+    rarity: epic
+    realm: olympus
+    class_tier: III
+    behavior: ritual
+    archetype: spirit
+    visual_keywords: [shape-shifting, seal-form, seal-lord]
+    accepts_champion: false
+    flavor_ua: "Старець моря. Спершу — загадки; потім — зуби."
+    flavor_en: "Old man of the sea. Riddles first; teeth second."
+    level_range: [30, 40, 2]
+
+  # --- Class IV (2 mobs, raid-only) ---
+  - slug: ares_herald
+    name_ua: "Арес-вісник"
+    name_en: "Ares Herald"
+    rarity: legendary
+    realm: olympus
+    class_tier: IV
+    behavior: team
+    archetype: divine
+    visual_keywords: [blood-armor, spear-of-war, hound-and-vulture]
+    accepts_champion: false
+    flavor_ua: "Не сам Арес — його передвісник. Достатньо, щоб зрівняти квартал."
+    flavor_en: "Not Ares himself — his war-forward. Enough to level a district."
+    level_range: [50, 60, 2]
+
+  - slug: artemis_huntress
+    name_ua: "Артеміда-мисливиця"
+    name_en: "Artemis Huntress"
+    rarity: legendary
+    realm: olympus
+    class_tier: IV
+    behavior: team
+    archetype: divine
+    visual_keywords: [silver-bow, moon-halo, cypress-spear]
+    accepts_champion: false
+    flavor_ua: "Не богиня — її аватар. Місяць полює разом із нею."
+    flavor_en: "Not the goddess — her avatar. The moon hunts with her."
+    level_range: [50, 60, 2]

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Application\User\DTO;
 
 use App\Domain\User\Enum\ActivityLevel;
-use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\WorkoutType;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -19,7 +18,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Used by: RegistrationController (populates from JSON) -> RegistrationService (reads fields)
  *
  * Contains both account fields (login/password) and RPG onboarding fields
- * (character race, workout type, activity level, desired goal).
+ * (workout type, activity level, desired goal).
  */
 final class RegistrationDTO
 {
@@ -56,7 +55,4 @@ final class RegistrationDTO
 
     #[Assert\NotBlank(message: 'Desired goal is required.')]
     public ?DesiredGoal $desiredGoal = null;
-
-    #[Assert\NotBlank(message: 'Character race is required.')]
-    public ?CharacterRace $characterRace = null;
 }

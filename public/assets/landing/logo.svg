@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" role="img" aria-label="RPGFit — VERA-ICS">
+  <rect width="320" height="80" rx="8" fill="#0B1420"/>
+  <path d="M12 12 H24 M12 12 V24" stroke="#D97B3E" stroke-width="2" fill="none"/>
+  <path d="M308 68 H296 M308 68 V56" stroke="#D97B3E" stroke-width="2" fill="none"/>
+  <path d="M40 28 L54 42 L40 56 L26 42 Z" stroke="#D97B3E" stroke-width="1.5" fill="none"/>
+  <circle cx="40" cy="42" r="3" fill="#D97B3E"/>
+  <text x="72" y="46" fill="#E8DDCE" font-family="IBM Plex Sans, sans-serif" font-size="22" font-weight="700" letter-spacing="4">VERA-ICS</text>
+  <text x="72" y="64" fill="#8A8478" font-family="IBM Plex Mono, monospace" font-size="9" letter-spacing="3">VF-07/42 · FIELD INSTRUMENT</text>
+</svg>

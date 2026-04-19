@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="{% block html_lang %}uk{% endblock %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0B1420">
+    <meta name="color-scheme" content="dark">
+
+    <title>{% block title %}RPGFit — VERA-ICS Expedition Instrument{% endblock %}</title>
+
+    {# SEO meta #}
+    <meta name="description" content="{% block meta_description %}RPGFit — твій смартфон як польовий інструмент VERA-ICS. Тренуйся, досліджуй Щілину, приєднуйся до 4 700 операторів на старті 31.10.2026.{% endblock %}">
+    <meta name="robots" content="index,follow">
+    <meta name="author" content="VERA-ICS · RPGFit">
+
+    {# Canonical #}
+    <link rel="canonical" href="{% block canonical_url %}{{ absolute_url(path('landing')) }}{% endblock %}">
+
+    {# Open Graph #}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="RPGFit">
+    <meta property="og:locale" content="uk_UA">
+    <meta property="og:title" content="{% block og_title %}RPGFit — Field instrument of the Rupture{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Твій смартфон — Vector. Твоє тіло — сенсор. Приєднуйся до експедиції VERA-ICS.{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{{ absolute_url(path('landing')) }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ absolute_url(asset('assets/landing/og-image.png')) }}{% endblock %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    {# Twitter Card #}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ block('og_title') }}">
+    <meta name="twitter:description" content="{{ block('og_description') }}">
+    <meta name="twitter:image" content="{{ block('og_image') }}">
+
+    {# Favicon #}
+    <link rel="icon" type="image/svg+xml" href="{{ asset('assets/landing/favicon.svg') }}">
+    <link rel="alternate icon" href="{{ asset('assets/landing/favicon.ico') }}">
+
+    {# Fonts — IBM Plex Sans + IBM Plex Mono + Space Grotesk (per 07 Vector Field spec) #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+
+    {# Landing stylesheet #}
+    <link rel="stylesheet" href="{{ asset('assets/landing/landing.css') }}">
+
+    {% block structured_data %}{% endblock %}
+
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+{% block body %}{% endblock %}
+</body>
+</html>

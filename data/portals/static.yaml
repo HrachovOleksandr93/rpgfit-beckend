@@ -1,0 +1,171 @@
+# Static portals — 15 curated landmarks per docs/vision/portals.md §B
+# + 3 city anchors (Kyiv / Berlin / Barcelona).
+# Coordinates are approximate centers.
+
+portals:
+  # --- Realm landmarks from portals.md §B ---
+  - slug: galdhopiggen-peak
+    name: "Galdhøpiggen Peak"
+    realm: asgard
+    latitude: 61.6361
+    longitude: 8.3125
+    radius_m: 500
+    tier: 3
+    challenge_type: cardio_distance
+    challenge_params: { target_km: 8 }
+    reward_artifact_slug: asgard-trench-horn
+
+  - slug: santorini-caldera
+    name: "Santorini Caldera"
+    realm: olympus
+    latitude: 36.4072
+    longitude: 25.4319
+    radius_m: 400
+    tier: 3
+    challenge_type: cardio_minutes
+    challenge_params: { target_minutes: 45 }
+    reward_artifact_slug: olympus-volcanic-lodestone
+
+  - slug: dikti-caves
+    name: "Dikti Caves"
+    realm: olympus
+    latitude: 35.1628
+    longitude: 25.4458
+    radius_m: 300
+    tier: 2
+    challenge_type: strength_volume
+    challenge_params: { target_volume: 3000 }
+    reward_artifact_slug: olympus-cave-torc
+
+  - slug: pindus-gorge
+    name: "Pindus Gorge"
+    realm: olympus
+    latitude: 39.7500
+    longitude: 21.0333
+    radius_m: 500
+    tier: 2
+    challenge_type: cardio_distance
+    challenge_params: { target_km: 6 }
+    reward_artifact_slug: olympus-pindus-bow
+
+  - slug: vatnajokull-glacier
+    name: "Vatnajökull Glacier"
+    realm: asgard
+    latitude: 64.4167
+    longitude: -16.8333
+    radius_m: 600
+    tier: 3
+    challenge_type: cardio_minutes
+    challenge_params: { target_minutes: 60 }
+    reward_artifact_slug: asgard-glacier-haft
+
+  - slug: erg-chebbi
+    name: "Erg Chebbi Dunes"
+    realm: duat
+    latitude: 31.1565
+    longitude: -4.0128
+    radius_m: 800
+    tier: 2
+    challenge_type: cardio_distance
+    challenge_params: { target_km: 10 }
+    reward_artifact_slug: duat-sand-amulet
+
+  - slug: dnipro-kaniv
+    name: "Dnipro at Kaniv"
+    realm: nav
+    latitude: 49.7578
+    longitude: 31.4547
+    radius_m: 500
+    tier: 2
+    challenge_type: swim_minutes
+    challenge_params: { target_minutes: 20 }
+    reward_artifact_slug: nav-river-torc
+
+  - slug: amazonia-anavilhanas
+    name: "Amazonia Anavilhanas"
+    realm: dharma
+    latitude: -2.3833
+    longitude: -60.9500
+    radius_m: 800
+    tier: 3
+    challenge_type: cardio_minutes
+    challenge_params: { target_minutes: 60 }
+    reward_artifact_slug: dharma-river-bead
+
+  - slug: crimea-yayla
+    name: "Crimea Yayla"
+    realm: nav
+    latitude: 44.5667
+    longitude: 34.2167
+    radius_m: 500
+    tier: 2
+    challenge_type: cardio_distance
+    challenge_params: { target_km: 7 }
+    reward_artifact_slug: nav-yayla-staff
+
+  - slug: himalayas-kumbh
+    name: "Himalayas Kumbh Trail"
+    realm: dharma
+    latitude: 28.5983
+    longitude: 83.8311
+    radius_m: 700
+    tier: 3
+    challenge_type: cardio_minutes
+    challenge_params: { target_minutes: 75 }
+    reward_artifact_slug: dharma-kumbh-mala
+
+  - slug: teotihuacan
+    name: "Teotihuacan"
+    realm: shiba
+    latitude: 19.6925
+    longitude: -98.8439
+    radius_m: 400
+    tier: 2
+    challenge_type: strength_volume
+    challenge_params: { target_volume: 2500 }
+    reward_artifact_slug: shiba-sun-pendant
+
+  - slug: angkor-wat
+    name: "Angkor Wat"
+    realm: dharma
+    latitude: 13.4125
+    longitude: 103.8670
+    radius_m: 500
+    tier: 2
+    challenge_type: cardio_distance
+    challenge_params: { target_km: 5 }
+    reward_artifact_slug: dharma-angkor-mudra
+
+  # --- City anchors ---
+  - slug: kyiv-pecherska
+    name: "Kyiv — Pechersk Lavra"
+    realm: nav
+    latitude: 50.4354
+    longitude: 30.5570
+    radius_m: 300
+    tier: 1
+    challenge_type: cardio_distance
+    challenge_params: { target_km: 3 }
+    reward_artifact_slug: nav-pecherska-icon
+
+  - slug: berlin-brandenburg
+    name: "Berlin — Brandenburg Gate"
+    realm: asgard
+    latitude: 52.5163
+    longitude: 13.3777
+    radius_m: 300
+    tier: 1
+    challenge_type: cardio_distance
+    challenge_params: { target_km: 3 }
+    reward_artifact_slug: asgard-brandenburg-key
+
+  - slug: barcelona-montjuic
+    name: "Barcelona — Montjuïc"
+    realm: olympus
+    latitude: 41.3636
+    longitude: 2.1580
+    radius_m: 300
+    tier: 1
+    challenge_type: cardio_distance
+    challenge_params: { target_km: 4 }
+    reward_artifact_slug: olympus-montjuic-laurel

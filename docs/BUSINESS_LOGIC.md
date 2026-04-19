@@ -8,7 +8,7 @@ The mobile app sends a single JSON payload with account credentials and full RPG
 
 1. **RegistrationController** parses JSON into `RegistrationDTO`
 2. Symfony Validator checks constraints: email format, password >= 8 chars, display name 3-30 chars, all required fields present
-3. Enum strings (workoutType, activityLevel, desiredGoal, characterRace) are converted via `::tryFrom()`
+3. Enum strings (workoutType, activityLevel, desiredGoal) are converted via `::tryFrom()`
 4. **RegistrationService** checks uniqueness of login (email) and display name against the database
 5. Creates `User` entity, hashes password (bcrypt/argon2 via Symfony password hasher)
 6. Sets `onboardingCompleted = true` (standard registration collects all data upfront)
@@ -48,7 +48,6 @@ Required for OAuth users who were created without profile data. Can only be call
 - `displayName` (3-30 chars, alphanumeric + underscore only)
 - `height` (50-300 cm), `weight` (20-500 kg)
 - `gender` (male/female)
-- `characterRace` (human/orc/dwarf/dark_elf/light_elf)
 - `workoutType` (cardio/strength/mixed/crossfit/gymnastics/martial_arts/yoga)
 - `trainingFrequency` (none/light/moderate/heavy)
 - `lifestyle` (sedentary/moderate/active/very_active)
@@ -106,9 +105,13 @@ Required for OAuth users who were created without profile data. Can only be call
 
 **Example:** A strength/active/heavy user gets base 5+5+5=15, workout +5+1+2=8, lifestyle +1+1+1=3, frequency +1+1+1=3, raw total = 29. Deficit of 1 goes to strength (highest). Final: STR=12, DEX=8, CON=10.
 
-### Race Passives
+### Race Passives (REMOVED 2026-04-18)
 
-Each race has 5 passive skills (always active, providing stat bonuses). These are seeded by `app:seed-skills` and auto-applied based on the user's `characterRace`. Race skills have `is_race_skill = true` and `race_restriction` set.
+Character races were removed per founder decision D4 (2026-04-18). The 5
+race passive skills (Versatile Nature, Blood of the Horde, Mountain Born,
+Shadow Instinct, Sylvan Grace) are no longer seeded. The `characterRace`
+column on `users` was dropped, and onboarding no longer collects race.
+Existing user-skill links to race skills are removed by migration.
 
 ### Level Progression
 
@@ -228,7 +231,7 @@ Maximum 3000 XP per day from health sync (configurable via `xp_daily_cap`). Batt
 
 ### Skill Categories
 
-1. **Race skills** (5 per race, 25 total): Passive, always active, restricted to one race via `race_restriction`. Flagged with `is_race_skill = true`.
+1. **Race skills** — REMOVED 2026-04-18. Previously 5 race passives per character; races have been cut from the game (D4). The `race_restriction` / `is_race_skill` columns on the `skills` table remain for backward compatibility but are no longer populated by seeders.
 
 2. **Universal skills** (2 total): Active skills (have duration and cooldown), available to all players. Flagged with `is_universal = true`.
 
@@ -704,3 +707,206 @@ Settings are managed via the Sonata Admin "Game Settings" panel (under the Confi
 Two commands populate initial settings:
 - `app:seed-battle-settings`: Battle tick frequency, damage factors, performance thresholds
 - `app:seed-workout-settings`: Exercises per session, base XP, anomaly thresholds, XP rates
+
+---
+
+## 12. Artifact Realm Binding (Damage Multiplier)
+
+Added 2026-04-18. Ties the Mob and Inventory domains through the shared
+`Realm` enum (`App\Domain\Shared\Enum\Realm`).
+
+### Rule
+
+Each `ItemCatalog` row may carry an optional `realm` column. During battle
+result calculation, if **any equipped artifact's realm equals the current
+mob's realm**, the total damage is multiplied by **1.4** (+40%).
+
+Implementation: `BattleResultCalculator::applyRealmMatchMultiplier()` is
+invoked immediately after the base damage is computed, using the equipped
+inventory list and `WorkoutSession::getMob()->getRealm()`.
+
+| Scenario | Artifact realm | Mob realm | Outcome |
+|----------|----------------|-----------|---------|
+| Match | `olympus` | `olympus` | damage × 1.4 |
+| Mismatch | `asgard` | `olympus` | damage × 1.0 |
+| Unbound | `null` | any | damage × 1.0 |
+| No mob realm | any | `null` | damage × 1.0 |
+
+### Why not per-artifact stacking?
+
+The rule is "at least one matches" rather than "sum of matching artifacts"
+to keep the calculation deterministic and the UI readable. Multiple
+matching artifacts do **not** stack the multiplier.
+
+### Data seeding
+
+Artifact realm is set by admins in Sonata ("Items"). Portal rewards in
+`data/portals/static.yaml` set the `reward_artifact_slug`, and the
+admin-curated item referenced by that slug carries the realm.
+
+### Testing
+
+- Unit: `tests/Unit/ArtifactRealmMultiplierTest.php` covers
+  match / mismatch / null-realm paths and the `1.4×` multiplier arithmetic.
+
+---
+
+## 13. Test Harness (Phase 6)
+
+Added 2026-04-18. The test harness is a dedicated `/api/test/*` surface
+used by QA, testers, and Playwright to drive the app into arbitrary
+states without going through slow real-world flows (HealthKit observers,
+actual workouts, inventory grinds).
+
+**Authoritative spec:** `docs/superpowers/specs/2026-04-18-test-harness-spec.md`.
+
+### Scope (21 endpoints)
+
+- Inventory: `grant`, `clear`, `equipment/equip`, `equipment/unequip`
+- XP / Level: `xp/grant`, `level/set`, `level/grant`, `stats/set`
+- Health: `health/inject`, `health/clear`
+- Workout: `workout/log`, `workout/simulate-stream`
+- Battle: `battle/simulate`
+- Portal: `portal/spawn-near-me`
+- User: `user/state`, `user/reset?hard=1`
+- Event: `event/trigger` (admin+)
+- Meta: `meta/enable?ttl_min=60`, `meta/disable`, `meta/status`
+  (superadmin for enable/disable; tester for status)
+- Audit: `audit/recent?limit=50` (admin+)
+
+### Kill-switches (spec §6.3, §11 Q7)
+
+1. **Env var `APP_TESTING_ENABLED`** — `false` in committed `.env`,
+   `true` in `.env.dev` / `.env.test`. When `false`, every
+   `/api/test/*` path returns `404` via `TestHarnessKillSwitchListener`.
+2. **Runtime override via `GameSetting`** — a superadmin can open the
+   harness in prod for `ttl_min` minutes by calling
+   `POST /api/test/meta/enable?ttl_min=60`. The override is stored in
+   two `GameSetting` rows (`test_harness.enabled`,
+   `test_harness.expires_at`) and auto-reverts via
+   `php bin/console app:testing-check` (cron: every minute).
+
+### Role policy (spec §5, §6)
+
+- `ROLE_USER` -> 403 on any `/api/test/*` path.
+- `ROLE_TESTER` -> self-mutation only. `asUserId` in query/body => 403.
+- `ROLE_ADMIN` -> can mutate any user when passing `asUserId` + a
+  canonical `reason` (enum `App\Domain\Test\Enum\ReasonEnum`).
+- `ROLE_SUPERADMIN` -> additionally can flip the kill-switch at runtime.
+
+All role enforcement is centralised in
+`App\Application\Test\Service\TargetUserResolver` — controllers never
+read `asUserId` directly.
+
+### `?force=1` semantics
+
+Only relaxes **business caps** (e.g. `xp_daily_cap`,
+`level.grant` 5-level-per-call guard). Never relaxes database
+constraints (FK, unique keys, NOT NULL) — those stay authoritative.
+
+### Audit trail (spec §3.11, §11 Q4)
+
+Every mutation writes one row to `admin_action_logs` via
+`AdminActionLogService::record()`. No external webhook in beta; the
+admin reads the trail via Sonata or `GET /api/test/audit/recent`.
+
+### Rate limit (spec §6.2)
+
+60 requests/min/user, enforced per endpoint call by
+`TestHarnessRateLimiter` (PSR-6 cache-backed sliding-window). Returns
+`429 Too Many Requests` with `Retry-After` on breach.
+
+### Not inherited from OAuthController (spec §6.5)
+
+The harness never introduces a new auth path. Every request is already
+JWT-authenticated through the existing `api` firewall; `asUserId` only
+swaps the **target** of the mutation, never the **principal**.
+
+---
+
+## 14. Psych Profiler (Beta)
+
+Spec:
+[`docs/superpowers/specs/2026-04-18-psych-profiler-beta-impl.md`](./superpowers/specs/2026-04-18-psych-profiler-beta-impl.md)
+(crosslinks `BA/outputs/10-psychology-research.md`).
+
+### Feature flag
+
+- Env var `PSYCH_PROFILER_ENABLED` — default `false` in committed `.env`,
+  `true` in `.env.dev` / `.env.test`. When `false`, every
+  `/api/psych/*` path returns `404` via `PsychProfileController::assertEnabled()`.
+- Per-user toggle `PsychUserProfile.featureOptedIn` — when `false`,
+  `GET /api/psych/today` responds with `{isDue:false, reason:"not_opted_in"}`.
+
+### 3-question flow (spec §2)
+
+Q1 mood quadrant (5 options), Q2 energy 1..5, Q3 intent
+(REST / MAINTAIN / PUSH). Text-only UI — no emojis, no icons.
+
+### Status assignment (spec §3)
+
+Deterministic, first-match-wins JSON rule table stored in
+`game_settings.psych.status_rules`. Order:
+
+1. `mood == ON_EDGE` -> `SCATTERED`
+2. `mood == DRAINED` -> `WEARY`
+3. `mood in {AT_EASE, NEUTRAL} && intent == REST` -> `DORMANT`
+4. `mood == ENERGIZED && intent == PUSH && energy >= 4` -> `CHARGED`
+5. default -> `STEADY`
+
+Status is valid until the user's local midnight
+(`PsychUserProfile.statusValidUntil`). A second check-in on the same
+day is idempotent and reuses the existing row.
+
+### Skip policy
+
+Skip inherits the previous day's status and increments the consecutive
+skip counter. On the 7th consecutive skip
+(`CheckInService::SKIP_RESET_THRESHOLD`) the status is forced to
+`STEADY`. An answered check-in resets the counter to 0.
+
+### XP multipliers (spec §4) — DEFERRED WIRING
+
+`PsychStatusModifierService::getXpMultiplier(User, $activityContext)`
+returns the contextual multiplier:
+
+| Status | Context that triggers the buff | Multiplier |
+|--------|-------------------------------|-----------:|
+| CHARGED | `new_challenge` | x1.15 |
+| DORMANT | `rest` | x1.20 |
+| STEADY | — | x1.00 |
+| WEARY | — | x1.00 (never penalise) |
+| SCATTERED | — | x1.00 (never penalise) |
+
+**Integration TODO:** wire `PsychStatusModifierService` into
+`BattleResultCalculator` and the workout XP pipeline **after** the beta
+cohort reports back. Leaving it unwired keeps the hot battle path
+untouched while the feature flag is off. Red lines: no damage-taken
+multiplier, no XP/streak for the check-in itself.
+
+### Crisis detection (spec §1 decision 1)
+
+`CrisisDetectionService::hasCrisisPattern(User)` returns `true` when 5
+of the last 7 calendar days were WEARY or SCATTERED. Emits a
+`psych.crisis-pattern` `LoggerInterface::warning` with a 30-day per-user
+cooldown stored in `game_settings.psych.crisis_last_flagged_{userId}`.
+No user-facing nudge in beta — admin spots it through the log channel.
+
+### Privacy / GDPR
+
+- Retention: `psych.retention_days` = 180. Planned `app:psych-purge`
+  command deletes rows older than this cutoff.
+- Export: `GET /api/psych/export` returns the user's profile + all
+  check-ins as JSON (Art. 20).
+- Hard erase: `DELETE /api/psych/history` returns 204 after wiping all
+  check-ins and resetting the profile counters (Art. 17).
+- Soft opt-out: `POST /api/psych/opt-out?erase=1` erases check-ins in
+  addition to flipping `featureOptedIn=false`.
+
+### Test-harness integration
+
+`POST /api/test/psych/seed` (tester+) seeds N back-dated check-ins with
+a given status so Playwright can trigger crisis-detection without
+waiting real days. Respects both the `APP_TESTING_ENABLED` kill-switch
+and `PSYCH_PROFILER_ENABLED`.
+

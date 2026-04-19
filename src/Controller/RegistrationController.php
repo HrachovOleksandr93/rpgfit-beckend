@@ -7,7 +7,6 @@ namespace App\Controller;
 use App\Application\User\DTO\RegistrationDTO;
 use App\Application\User\Service\RegistrationService;
 use App\Domain\User\Enum\ActivityLevel;
-use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\WorkoutType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,7 +22,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  *
  * Receives POST /api/registration with JSON body from the mobile app (iOS/Android).
  * The registration form collects both account data (login, password) and RPG profile
- * data (character race, workout preferences, fitness goals).
+ * data (workout preferences, fitness goals).
  *
  * Flow: Mobile App -> JSON POST -> validate DTO -> RegistrationService -> DB -> JSON response
  *
@@ -66,7 +65,6 @@ class RegistrationController extends AbstractController
         $dto->workoutType = isset($data['workoutType']) ? WorkoutType::tryFrom($data['workoutType']) : null;
         $dto->activityLevel = isset($data['activityLevel']) ? ActivityLevel::tryFrom($data['activityLevel']) : null;
         $dto->desiredGoal = isset($data['desiredGoal']) ? DesiredGoal::tryFrom($data['desiredGoal']) : null;
-        $dto->characterRace = isset($data['characterRace']) ? CharacterRace::tryFrom($data['characterRace']) : null;
 
         // Validate DTO using Symfony Validator constraints defined on RegistrationDTO properties
         $violations = $this->validator->validate($dto);
@@ -104,7 +102,6 @@ class RegistrationController extends AbstractController
                 'workoutType' => $user->getWorkoutType()?->value,
                 'activityLevel' => $user->getActivityLevel()?->value,
                 'desiredGoal' => $user->getDesiredGoal()?->value,
-                'characterRace' => $user->getCharacterRace()?->value,
                 'createdAt' => $user->getCreatedAt()->format(\DateTimeInterface::ATOM),
                 'updatedAt' => $user->getUpdatedAt()->format(\DateTimeInterface::ATOM),
             ],

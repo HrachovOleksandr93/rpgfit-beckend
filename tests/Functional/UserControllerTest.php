@@ -7,12 +7,12 @@ namespace App\Tests\Functional;
 use App\Domain\Character\Entity\CharacterStats;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Enum\ActivityLevel;
-use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\Gender;
 use App\Domain\User\Entity\UserTrainingPreference;
 use App\Domain\User\Enum\Lifestyle;
 use App\Domain\User\Enum\TrainingFrequency;
+use App\Domain\User\Enum\UserRole;
 use App\Domain\User\Enum\WorkoutType;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -46,7 +46,6 @@ class UserControllerTest extends AbstractFunctionalTest
         $user->setWorkoutType(WorkoutType::Strength);
         $user->setActivityLevel(ActivityLevel::Active);
         $user->setDesiredGoal(DesiredGoal::GainMass);
-        $user->setCharacterRace(CharacterRace::Orc);
         $user->setOnboardingCompleted(true);
         $user->setPassword($hasher->hashPassword($user, 'SecurePass123'));
 
@@ -126,7 +125,6 @@ class UserControllerTest extends AbstractFunctionalTest
         $this->assertSame('male', $response['gender']);
         $this->assertEquals(180.0, $response['height']);
         $this->assertEquals(75.5, $response['weight']);
-        $this->assertSame('orc', $response['characterRace']);
         $this->assertSame('strength', $response['workoutType']);
         $this->assertSame('active', $response['activityLevel']);
         $this->assertSame('gain_mass', $response['desiredGoal']);
@@ -185,5 +183,34 @@ class UserControllerTest extends AbstractFunctionalTest
         $this->assertNull($response['gender']);
         $this->assertNull($response['height']);
         $this->assertNull($response['weight']);
+    }
+
+    public function testGetUserReturnsRoles(): void
+    {
+        $user = $this->createFullUser();
+
+        // Promote to tester to verify the full list is emitted.
+        $user->addRole(UserRole::TESTER);
+        $em = self::getContainer()->get('doctrine')->getManager();
+        $em->flush();
+
+        $token = $this->getJwtToken($user);
+
+        $this->client->request(
+            'GET',
+            self::USER_URL,
+            [],
+            [],
+            ['HTTP_AUTHORIZATION' => 'Bearer ' . $token],
+        );
+
+        $this->assertResponseStatusCodeSame(200);
+
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+
+        $this->assertArrayHasKey('roles', $response);
+        $this->assertIsArray($response['roles']);
+        $this->assertContains(UserRole::USER->value, $response['roles']);
+        $this->assertContains(UserRole::TESTER->value, $response['roles']);
     }
 }

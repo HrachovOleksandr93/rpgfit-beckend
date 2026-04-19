@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Maps the JSON body from the mobile app's onboarding flow to a validated PHP object.
  * All fields are collected in a single step on the client and sent as one POST request.
  *
- * Enum values (gender, characterRace, workoutType, trainingFrequency, lifestyle)
+ * Enum values (gender, workoutType, trainingFrequency, lifestyle)
  * are received as strings and validated/converted by the OnboardingController.
  *
  * Used by: OnboardingController (populates from JSON) -> OnboardingService (reads fields)
@@ -53,10 +53,6 @@ final class OnboardingDTO
     // Validated as string, converted to Gender enum in controller
     #[Assert\NotBlank(message: 'Gender is required.')]
     public string $gender = '';
-
-    // Validated as string, converted to CharacterRace enum in controller
-    #[Assert\NotBlank(message: 'Character race is required.')]
-    public string $characterRace = '';
 
     // Validated as string, converted to TrainingFrequency enum in controller
     #[Assert\NotBlank(message: 'Training frequency is required.')]

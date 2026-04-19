@@ -6,21 +6,14 @@
 
 ---
 
-## 1. Race Passive Skills (5 skills)
-
-Race passives are always active. No duration, no cooldown. One per race.
-
-| # | Skill Name | Slug | Race | STR | DEX | CON | Total | Description |
-|---|-----------|------|------|-----|-----|-----|-------|-------------|
-| 1 | Versatile Nature | `versatile-nature` | Human | +2 | +2 | +2 | 6 | Humans adapt to any challenge. A balanced bonus to all attributes reflects their jack-of-all-trades heritage. |
-| 2 | Blood of the Horde | `blood-of-the-horde` | Orc | +4 | 0 | +1 | 5 | Orcs are born with savage power coursing through their veins. Brute strength is their birthright. |
-| 3 | Mountain Born | `mountain-born` | Dwarf | +2 | 0 | +3 | 5 | Dwarves are carved from the stone of the deep mountains — sturdy, unbreakable, and impossible to move. |
-| 4 | Shadow Instinct | `shadow-instinct` | Dark Elf | +1 | +4 | 0 | 5 | Dark Elves move with lethal quickness honed in the lightless depths of the underworld. |
-| 5 | Sylvan Grace | `sylvan-grace` | Light Elf | 0 | +3 | +2 | 5 | Light Elves carry the flowing grace of the ancient forests — nimble and enduring as the wind through the trees. |
+> **Note (2026-04-18 founder decision D4):** Character races were removed
+> from the game. The previous §1 "Race Passive Skills" table is obsolete.
+> All racial stat bonuses no longer apply; new users skip the race pick
+> during onboarding.
 
 ---
 
-## 2. Universal Active Skills (2 skills)
+## 1. Universal Active Skills (2 skills)
 
 Available to all players regardless of race or profession.
 

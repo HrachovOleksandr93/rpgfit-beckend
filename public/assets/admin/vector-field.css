@@ -1,0 +1,540 @@
+/*
+ * VERA-ICS Admin — 07 Vector Field Restyle
+ * ----------------------------------------
+ * Phase 3B: presentation-only override on top of Sonata Admin (AdminLTE base).
+ * Palette / typography source of truth: docs/design/07-vector-field/concept.md
+ *
+ * Loaded AFTER Sonata's default stylesheets via block override in
+ * templates/bundles/SonataAdminBundle/standard_layout.html.twig.
+ *
+ * All rules live inside `@layer vector-field` so specificity never fights
+ * vendor CSS — the cascade-layer ordering guarantees vendor loses.
+ * A handful of rules sit outside the layer (font imports, :root tokens,
+ * @keyframes) because at-rules cannot be nested inside layers.
+ */
+
+/* Font loading — IBM Plex Sans + IBM Plex Mono (engineering-first) */
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap");
+
+/* Design tokens — reusable across admin */
+:root {
+    --vf-bg: #0B1420;
+    --vf-surface: #14202E;
+    --vf-panel: #1C2A3D;
+    --vf-panel-hi: #243449;
+    --vf-copper: #D97B3E;
+    --vf-copper-deep: #A85A25;
+    --vf-cyan: #7FB8C9;
+    --vf-sage: #B8C775;
+    --vf-amber: #E5A845;
+    --vf-rust: #C0413D;
+    --vf-fg: #E8DDCE;
+    --vf-fg-muted: #A89DA8;
+    --vf-line: #2A3A50;
+    --vf-azure: #0057B7;
+
+    --vf-font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --vf-font-mono: "IBM Plex Mono", "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* Declare layer order — vendor default, then our overrides */
+@layer sonata, vector-field;
+
+@layer vector-field {
+    /* ---------- Base body + typography ---------- */
+    body.sonata-bc {
+        background: var(--vf-bg);
+        color: var(--vf-fg);
+        font-family: var(--vf-font-sans);
+    }
+
+    h1, h2, h3, h4, h5, h6,
+    .content-header h1,
+    .box-title {
+        font-family: var(--vf-font-sans);
+        color: var(--vf-fg);
+        letter-spacing: 0.04em;
+    }
+
+    .sonata-ba-list,
+    .sonata-ba-list td,
+    .sonata-ba-list th,
+    .form-control,
+    .btn {
+        font-family: var(--vf-font-sans);
+    }
+
+    /* Numeric columns — tabular-nums */
+    .sonata-ba-list td {
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* ---------- Header / top navbar ---------- */
+    .main-header,
+    .main-header .navbar-static-top,
+    .main-header .logo {
+        background: var(--vf-surface) !important;
+        border-bottom: 1px solid var(--vf-line);
+    }
+    .main-header .logo {
+        color: var(--vf-copper) !important;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+    .main-header .logo:hover {
+        background: var(--vf-panel) !important;
+    }
+    .main-header .navbar .sidebar-toggle {
+        color: var(--vf-fg-muted);
+    }
+    .main-header .navbar .sidebar-toggle:hover {
+        color: var(--vf-copper);
+        background: transparent;
+    }
+    .main-header .navbar-nav > li > a {
+        color: var(--vf-fg);
+    }
+    .main-header .navbar-nav > li > a:hover,
+    .main-header .navbar-nav > .open > a {
+        background: var(--vf-panel) !important;
+        color: var(--vf-copper) !important;
+    }
+
+    /* ---------- Breadcrumbs ---------- */
+    .breadcrumb {
+        background: transparent;
+    }
+    .breadcrumb > li > a,
+    .breadcrumb > .active {
+        color: var(--vf-fg-muted);
+    }
+    .breadcrumb > li > a:hover {
+        color: var(--vf-copper);
+    }
+    .breadcrumb > li + li:before {
+        color: var(--vf-line);
+    }
+
+    /* ---------- Sidebar ---------- */
+    .main-sidebar,
+    .main-sidebar .sidebar {
+        background: var(--vf-surface) !important;
+        border-right: 1px solid var(--vf-line);
+    }
+    .main-sidebar .sidebar-menu > li > a {
+        color: var(--vf-fg);
+        border-left: 3px solid transparent;
+    }
+    .main-sidebar .sidebar-menu > li.header {
+        background: transparent !important;
+        color: var(--vf-fg-muted);
+        font-family: var(--vf-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+    .main-sidebar .sidebar-menu > li:hover > a,
+    .main-sidebar .sidebar-menu > li.active > a,
+    .main-sidebar .sidebar-menu > li.menu-open > a {
+        background: var(--vf-panel) !important;
+        color: var(--vf-copper) !important;
+        border-left-color: var(--vf-copper);
+    }
+    .main-sidebar .sidebar-menu .treeview-menu {
+        background: var(--vf-bg) !important;
+    }
+    .main-sidebar .sidebar-menu .treeview-menu > li > a {
+        color: var(--vf-fg-muted);
+    }
+    .main-sidebar .sidebar-menu .treeview-menu > li.active > a,
+    .main-sidebar .sidebar-menu .treeview-menu > li > a:hover {
+        color: var(--vf-copper);
+        background: var(--vf-panel);
+    }
+    .sidebar-form {
+        border: 1px solid var(--vf-line) !important;
+        background: var(--vf-panel) !important;
+        border-radius: 6px;
+        margin: 10px !important;
+    }
+    .sidebar-form .form-control {
+        background: transparent !important;
+        color: var(--vf-fg) !important;
+        border: 0 !important;
+    }
+    .sidebar-form .btn {
+        background: transparent !important;
+        color: var(--vf-fg-muted) !important;
+        border: 0 !important;
+    }
+
+    /* ---------- Content area ---------- */
+    .content-wrapper,
+    .right-side {
+        background: var(--vf-bg) !important;
+    }
+    .content-header > h1 {
+        color: var(--vf-fg);
+        letter-spacing: 0.06em;
+    }
+    .content-header > h1 small {
+        color: var(--vf-fg-muted);
+    }
+
+    /* ---------- Panels / boxes / forms ---------- */
+    .box,
+    .sonata-ba-form,
+    .sonata-ba-form-actions {
+        background: var(--vf-panel) !important;
+        border: 1px solid var(--vf-line) !important;
+        border-radius: 8px;
+        box-shadow: none !important;
+        color: var(--vf-fg);
+    }
+    .box-header {
+        border-bottom: 1px solid var(--vf-line);
+        color: var(--vf-fg);
+    }
+    .box-header .box-title {
+        color: var(--vf-fg);
+        letter-spacing: 0.04em;
+    }
+    .box-footer,
+    .sonata-ba-form-actions {
+        background: var(--vf-surface) !important;
+        border-top: 1px solid var(--vf-line);
+    }
+    .box.box-primary { border-top: 3px solid var(--vf-copper) !important; }
+    .box.box-success { border-top: 3px solid var(--vf-sage) !important; }
+    .box.box-warning { border-top: 3px solid var(--vf-amber) !important; }
+    .box.box-danger  { border-top: 3px solid var(--vf-rust) !important; }
+    .box.box-info    { border-top: 3px solid var(--vf-cyan) !important; }
+
+    /* Dashboard blocks get the panel-hi treatment + crosshair accent on hover */
+    .sonata-bc .col-lg-6 > .box,
+    .sonata-bc .col-md-6 > .box,
+    .sonata-bc .col-lg-4 > .box,
+    .sonata-bc .col-md-4 > .box {
+        background: var(--vf-panel-hi) !important;
+        position: relative;
+        transition: border-color 0.2s ease;
+    }
+    .sonata-bc .col-lg-6 > .box:hover,
+    .sonata-bc .col-md-6 > .box:hover,
+    .sonata-bc .col-lg-4 > .box:hover,
+    .sonata-bc .col-md-4 > .box:hover {
+        border-color: var(--vf-copper) !important;
+    }
+    .sonata-bc .col-lg-6 > .box:hover::before,
+    .sonata-bc .col-md-6 > .box:hover::before,
+    .sonata-bc .col-lg-4 > .box:hover::before,
+    .sonata-bc .col-md-4 > .box:hover::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0;
+        width: 14px; height: 14px;
+        border-top: 1px solid var(--vf-copper);
+        border-left: 1px solid var(--vf-copper);
+        pointer-events: none;
+    }
+    .sonata-bc .col-lg-6 > .box:hover::after,
+    .sonata-bc .col-md-6 > .box:hover::after,
+    .sonata-bc .col-lg-4 > .box:hover::after,
+    .sonata-bc .col-md-4 > .box:hover::after {
+        content: "";
+        position: absolute;
+        bottom: 0; right: 0;
+        width: 14px; height: 14px;
+        border-bottom: 1px solid var(--vf-copper);
+        border-right: 1px solid var(--vf-copper);
+        pointer-events: none;
+    }
+
+    /* ---------- List tables ---------- */
+    .table,
+    .sonata-ba-list table {
+        background: transparent !important;
+        color: var(--vf-fg);
+    }
+    .table > thead > tr > th,
+    .sonata-ba-list thead th {
+        background: var(--vf-surface);
+        color: var(--vf-fg-muted);
+        border-bottom: 1px solid var(--vf-line) !important;
+        font-family: var(--vf-font-mono);
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+    .table > tbody > tr > td,
+    .sonata-ba-list tbody td {
+        border-top: 1px solid var(--vf-line) !important;
+        color: var(--vf-fg);
+    }
+    .table-striped > tbody > tr:nth-of-type(odd),
+    .sonata-ba-list tbody tr:nth-of-type(odd) {
+        background: rgba(255, 255, 255, 0.02) !important;
+    }
+    .table > tbody > tr:hover,
+    .sonata-ba-list tbody tr:hover {
+        background: var(--vf-panel-hi) !important;
+    }
+    .sonata-ba-list a {
+        color: var(--vf-copper);
+    }
+    .sonata-ba-list a:hover {
+        color: var(--vf-fg);
+    }
+
+    /* ---------- Tabs (tab-menu + nav-tabs-custom) ---------- */
+    .nav-tabs-custom,
+    .nav-tabs {
+        background: transparent;
+        border-bottom: 1px solid var(--vf-line);
+    }
+    .nav-tabs > li > a,
+    .nav-tabs-custom > .nav-tabs > li > a {
+        color: var(--vf-fg-muted);
+        border: 0;
+        background: transparent;
+    }
+    .nav-tabs > li.active > a,
+    .nav-tabs > li.active > a:focus,
+    .nav-tabs > li.active > a:hover,
+    .nav-tabs-custom > .nav-tabs > li.active > a {
+        color: var(--vf-copper) !important;
+        background: transparent !important;
+        border: 0 !important;
+        border-bottom: 2px solid var(--vf-copper) !important;
+    }
+    .nav-tabs > li > a:hover {
+        color: var(--vf-fg);
+        background: transparent;
+    }
+
+    /* ---------- Buttons ---------- */
+    .btn {
+        border-radius: 6px;
+        letter-spacing: 0.04em;
+        font-weight: 500;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+    .btn-primary,
+    .btn-primary.active,
+    .btn-primary:focus {
+        background: var(--vf-copper) !important;
+        border-color: var(--vf-copper) !important;
+        color: var(--vf-surface) !important; /* AAA 8.1:1 */
+    }
+    .btn-primary:hover,
+    .btn-primary:active {
+        background: var(--vf-copper-deep) !important;
+        border-color: var(--vf-copper-deep) !important;
+        color: var(--vf-fg) !important;
+    }
+    .btn-success {
+        background: var(--vf-sage) !important;
+        border-color: var(--vf-sage) !important;
+        color: var(--vf-surface) !important;
+    }
+    .btn-success:hover {
+        background: #a0b05d !important;
+        border-color: #a0b05d !important;
+    }
+    .btn-warning {
+        background: var(--vf-amber) !important;
+        border-color: var(--vf-amber) !important;
+        color: var(--vf-surface) !important;
+    }
+    .btn-danger {
+        background: var(--vf-rust) !important;
+        border-color: var(--vf-rust) !important;
+        color: var(--vf-fg) !important;
+    }
+    .btn-info {
+        background: var(--vf-cyan) !important;
+        border-color: var(--vf-cyan) !important;
+        color: var(--vf-surface) !important;
+    }
+    .btn-default {
+        background: transparent !important;
+        border: 1px solid var(--vf-line) !important;
+        color: var(--vf-fg) !important;
+    }
+    .btn-default:hover {
+        background: var(--vf-panel-hi) !important;
+        border-color: var(--vf-copper) !important;
+    }
+    .btn-link {
+        color: var(--vf-copper) !important;
+    }
+    .btn-link:hover {
+        color: var(--vf-fg) !important;
+    }
+
+    /* ---------- Form inputs ---------- */
+    .form-control,
+    textarea.form-control,
+    select.form-control,
+    .select2-container .select2-selection {
+        background: var(--vf-surface) !important;
+        color: var(--vf-fg) !important;
+        border: 1px solid var(--vf-line) !important;
+        border-radius: 6px;
+    }
+    .form-control::placeholder {
+        color: var(--vf-fg-muted);
+        opacity: 0.7;
+    }
+    .form-control:focus,
+    select.form-control:focus,
+    .select2-container--focus .select2-selection {
+        border-color: var(--vf-copper) !important;
+        box-shadow: 0 0 0 2px rgba(217, 123, 62, 0.25) !important;
+        outline: 2px solid var(--vf-copper);
+        outline-offset: 2px;
+    }
+    .control-label,
+    label {
+        color: var(--vf-fg);
+        font-weight: 500;
+    }
+    .help-block {
+        color: var(--vf-fg-muted);
+    }
+    .input-group-addon {
+        background: var(--vf-panel) !important;
+        border: 1px solid var(--vf-line) !important;
+        color: var(--vf-fg-muted) !important;
+    }
+
+    /* Sonata select2 results */
+    .select2-dropdown,
+    .select2-results__option {
+        background: var(--vf-panel) !important;
+        color: var(--vf-fg) !important;
+        border-color: var(--vf-line) !important;
+    }
+    .select2-results__option--highlighted {
+        background: var(--vf-copper) !important;
+        color: var(--vf-surface) !important;
+    }
+
+    /* ---------- Flash messages ---------- */
+    .alert,
+    .sonata-ba-notification {
+        background: var(--vf-panel) !important;
+        border: 1px solid var(--vf-line) !important;
+        border-left: 4px solid var(--vf-copper) !important;
+        color: var(--vf-fg) !important;
+        border-radius: 4px;
+    }
+    .alert-success  { border-left-color: var(--vf-sage) !important; }
+    .alert-warning  { border-left-color: var(--vf-amber) !important; }
+    .alert-danger,
+    .alert-error    { border-left-color: var(--vf-rust) !important; }
+    .alert-info     { border-left-color: var(--vf-cyan) !important; }
+
+    /* ---------- Labels / badges ---------- */
+    .label, .badge {
+        font-family: var(--vf-font-mono);
+        letter-spacing: 0.08em;
+        font-weight: 500;
+    }
+    .label-primary, .badge-primary { background: var(--vf-copper); color: var(--vf-surface); }
+    .label-success, .badge-success { background: var(--vf-sage);   color: var(--vf-surface); }
+    .label-warning, .badge-warning { background: var(--vf-amber);  color: var(--vf-surface); }
+    .label-danger,  .badge-danger  { background: var(--vf-rust);   color: var(--vf-fg); }
+    .label-info,    .badge-info    { background: var(--vf-cyan);   color: var(--vf-surface); }
+
+    /* ---------- Pagination ---------- */
+    .pagination > li > a,
+    .pagination > li > span {
+        background: var(--vf-panel) !important;
+        color: var(--vf-fg) !important;
+        border: 1px solid var(--vf-line) !important;
+    }
+    .pagination > .active > a,
+    .pagination > .active > span {
+        background: var(--vf-copper) !important;
+        border-color: var(--vf-copper) !important;
+        color: var(--vf-surface) !important;
+    }
+    .pagination > li > a:hover {
+        background: var(--vf-panel-hi) !important;
+        color: var(--vf-copper) !important;
+    }
+
+    /* ---------- Sonata dashboard blocks ---------- */
+    .sonata-ba-collapsed-fields legend,
+    fieldset legend {
+        color: var(--vf-fg);
+        border-bottom: 1px solid var(--vf-line);
+        font-family: var(--vf-font-mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 12px;
+    }
+
+    /* ---------- Accessibility: WCAG 2.4.7 focus ring on form controls ---------- */
+    .form-control:focus,
+    .btn:focus,
+    a:focus,
+    button:focus,
+    [tabindex]:focus {
+        outline: 2px solid var(--vf-copper);
+        outline-offset: 2px;
+    }
+
+    /* ---------- Hide Sonata footer credit (preserve in source) ---------- */
+    footer .sonata-project-link,
+    .sonata-ba-footer a[href*="sonata-project"],
+    .main-footer {
+        display: none !important;
+    }
+
+    /* ---------- Filters (sidebar panel above lists) ---------- */
+    .sonata-filters-box {
+        background: var(--vf-panel) !important;
+        border: 1px solid var(--vf-line) !important;
+    }
+
+    /* ---------- Modal (edit-many relations, confirm delete) ---------- */
+    .modal-content {
+        background: var(--vf-panel) !important;
+        color: var(--vf-fg) !important;
+        border: 1px solid var(--vf-line) !important;
+    }
+    .modal-header, .modal-footer {
+        border-color: var(--vf-line) !important;
+    }
+
+    /* ---------- Mobile: reduce padding, make wide tables scroll ---------- */
+    @media (max-width: 768px) {
+        .content {
+            padding: 8px !important;
+        }
+        .box-body {
+            padding: 10px !important;
+        }
+        .sonata-ba-list {
+            overflow-x: auto;
+        }
+        .sonata-ba-list table {
+            min-width: 640px;
+        }
+    }
+
+    /* ---------- Reduced motion (WCAG 2.3.3) ---------- */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            transition-duration: 0.001ms !important;
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            scroll-behavior: auto !important;
+        }
+    }
+}

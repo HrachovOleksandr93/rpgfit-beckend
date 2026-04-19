@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="RPGFit VERA-ICS">
+  <rect width="64" height="64" rx="12" fill="#0B1420"/>
+  <!-- crosshair brackets (copper) -->
+  <path d="M12 12 H22 M12 12 V22" stroke="#D97B3E" stroke-width="2" fill="none"/>
+  <path d="M52 52 H42 M52 52 V42" stroke="#D97B3E" stroke-width="2" fill="none"/>
+  <!-- center diamond ◈ motif -->
+  <path d="M32 18 L46 32 L32 46 L18 32 Z" stroke="#D97B3E" stroke-width="1.5" fill="none"/>
+  <circle cx="32" cy="32" r="4" fill="#D97B3E"/>
+  <!-- micro-ticks -->
+  <path d="M32 10 V14 M32 54 V50 M10 32 H14 M54 32 H50" stroke="#8A8478" stroke-width="1"/>
+</svg>

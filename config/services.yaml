@@ -29,11 +29,18 @@ services:
             - '../src/Domain/Media/Entity/'
             - '../src/Domain/Config/Entity/'
             - '../src/Domain/Mob/Entity/'
+            - '../src/Domain/Mob/Enum/'
+            - '../src/Domain/Portal/Entity/'
+            - '../src/Domain/Portal/Enum/'
+            - '../src/Domain/Shared/Enum/'
             - '../src/Domain/Activity/Entity/'
             - '../src/Domain/Workout/Entity/'
             - '../src/Domain/Workout/Enum/'
             - '../src/Domain/Battle/Entity/'
             - '../src/Domain/Battle/Enum/'
+            - '../src/Domain/Test/Entity/'
+            - '../src/Domain/Test/Enum/'
+            - '../src/Application/Test/DTO/'
             - '../src/Kernel.php'
 
     # add more service definitions when explicit configuration is needed
@@ -41,6 +48,8 @@ services:
 
     admin.user:
         class: App\Admin\UserAdmin
+        arguments:
+            $security: '@Symfony\Bundle\SecurityBundle\Security'
         tags:
             - { name: sonata.admin, model_class: App\Domain\User\Entity\User, manager_type: orm, label: Users, group: users }
 
@@ -128,6 +137,11 @@ services:
         class: App\Admin\MobAdmin
         tags:
             - { name: sonata.admin, model_class: App\Domain\Mob\Entity\Mob, manager_type: orm, label: Mobs, group: mobs }
+
+    admin.portal:
+        class: App\Admin\PortalAdmin
+        tags:
+            - { name: sonata.admin, model_class: App\Domain\Portal\Entity\Portal, manager_type: orm, label: Portals, group: portals }
 
     admin.activity_category:
         class: App\Admin\ActivityCategoryAdmin

@@ -39,24 +39,24 @@ class SeedSkillsCommandTest extends AbstractFunctionalTest
         $this->commandTester = new CommandTester($command);
     }
 
-    /** Verify the seeder creates exactly 39 unique skills (5 race + 2 universal + 32 profession). */
-    public function testSeederCreates39Skills(): void
+    /** Verify the seeder creates exactly 34 unique skills (2 universal + 32 profession; race skills removed 2026-04-18). */
+    public function testSeederCreates34Skills(): void
     {
         $this->commandTester->execute([]);
 
         $this->assertSame(0, $this->commandTester->getStatusCode());
 
         $skills = $this->em->getRepository(Skill::class)->findAll();
-        $this->assertCount(39, $skills);
+        $this->assertCount(34, $skills);
     }
 
-    /** Verify the seeder creates exactly 5 race passive skills. */
-    public function testSeederCreates5RaceSkills(): void
+    /** Verify no race-flagged skills are seeded anymore. */
+    public function testSeederCreatesNoRaceSkills(): void
     {
         $this->commandTester->execute([]);
 
         $raceSkills = $this->em->getRepository(Skill::class)->findBy(['isRaceSkill' => true]);
-        $this->assertCount(5, $raceSkills);
+        $this->assertCount(0, $raceSkills);
     }
 
     /** Verify the seeder creates exactly 2 universal active skills. */
@@ -84,7 +84,7 @@ class SeedSkillsCommandTest extends AbstractFunctionalTest
         $this->commandTester->execute([]);
 
         $bonuses = $this->em->getRepository(SkillStatBonus::class)->findAll();
-        $this->assertGreaterThan(39, count($bonuses));
+        $this->assertGreaterThan(34, count($bonuses));
     }
 
     /** Verify that --clear deletes existing data and re-seeds cleanly. */
@@ -100,7 +100,7 @@ class SeedSkillsCommandTest extends AbstractFunctionalTest
         $this->assertSame(0, $this->commandTester->getStatusCode());
 
         $skills = $this->em->getRepository(Skill::class)->findAll();
-        $this->assertCount(39, $skills);
+        $this->assertCount(34, $skills);
 
         $links = $this->em->getRepository(ProfessionSkill::class)->findAll();
         $this->assertCount(160, $links);

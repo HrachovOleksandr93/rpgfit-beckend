@@ -6,7 +6,6 @@ namespace App\Tests\Unit;
 
 use App\Application\User\DTO\RegistrationDTO;
 use App\Domain\User\Enum\ActivityLevel;
-use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\WorkoutType;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -33,7 +32,6 @@ class RegistrationDTOTest extends KernelTestCase
         $dto->workoutType = WorkoutType::Cardio;
         $dto->activityLevel = ActivityLevel::Active;
         $dto->desiredGoal = DesiredGoal::LoseWeight;
-        $dto->characterRace = CharacterRace::Human;
 
         return $dto;
     }
@@ -163,12 +161,4 @@ class RegistrationDTOTest extends KernelTestCase
         $this->assertGreaterThan(0, count($violations));
     }
 
-    public function testNullCharacterRaceIsInvalid(): void
-    {
-        $dto = $this->createValidDTO();
-        $dto->characterRace = null;
-
-        $violations = $this->validator->validate($dto);
-        $this->assertGreaterThan(0, count($violations));
-    }
 }

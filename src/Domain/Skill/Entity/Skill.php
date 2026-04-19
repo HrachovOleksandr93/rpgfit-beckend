@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Domain\Skill\Entity;
 
 use App\Domain\Media\Entity\MediaFile;
-use App\Domain\User\Enum\CharacterRace;
 use App\Infrastructure\Skill\Repository\SkillRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -66,9 +65,13 @@ class Skill
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $cooldown = null;
 
-    /** Race restriction: if set, only characters of this race can use this skill */
-    #[ORM\Column(type: 'string', length: 20, nullable: true, enumType: CharacterRace::class)]
-    private ?CharacterRace $raceRestriction = null;
+    /**
+     * Legacy race restriction column (human/orc/dwarf/dark_elf/light_elf).
+     * Races were removed per founder decision D4 (2026-04-18); the column
+     * is kept for backward compatibility but is no longer populated.
+     */
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $raceRestriction = null;
 
     /** Skill tier: 1, 2, or 3 for profession skills; null for race/universal skills */
     #[ORM\Column(type: 'integer', nullable: true)]
@@ -205,12 +208,12 @@ class Skill
         return $this;
     }
 
-    public function getRaceRestriction(): ?CharacterRace
+    public function getRaceRestriction(): ?string
     {
         return $this->raceRestriction;
     }
 
-    public function setRaceRestriction(?CharacterRace $raceRestriction): self
+    public function setRaceRestriction(?string $raceRestriction): self
     {
         $this->raceRestriction = $raceRestriction;
 

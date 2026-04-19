@@ -402,7 +402,17 @@ class BattleResultCalculatorTest extends TestCase
             $this->createLevelingService(),
             $this->createMock(ExperienceLogRepository::class),
             $this->createMock(EntityManagerInterface::class),
+            $this->createPsychModifierStub(),
         );
+    }
+
+    /** Psych multiplier stub — all calculator tests run with 1.0. */
+    private function createPsychModifierStub(): \App\Application\PsychProfile\Service\PsychStatusModifierService
+    {
+        $stub = $this->createMock(\App\Application\PsychProfile\Service\PsychStatusModifierService::class);
+        $stub->method('getXpMultiplier')->willReturn(1.0);
+
+        return $stub;
     }
 
     /**
@@ -515,6 +525,7 @@ class BattleResultCalculatorTest extends TestCase
             $this->createLevelingService(),
             $this->createMock(ExperienceLogRepository::class),
             $this->createMock(EntityManagerInterface::class),
+            $this->createPsychModifierStub(),
         );
     }
 

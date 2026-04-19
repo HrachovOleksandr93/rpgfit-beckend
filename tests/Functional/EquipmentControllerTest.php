@@ -11,7 +11,6 @@ use App\Domain\Inventory\Enum\ItemRarity;
 use App\Domain\Inventory\Enum\ItemType;
 use App\Domain\User\Entity\User;
 use App\Domain\User\Enum\ActivityLevel;
-use App\Domain\User\Enum\CharacterRace;
 use App\Domain\User\Enum\DesiredGoal;
 use App\Domain\User\Enum\WorkoutType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -48,7 +47,6 @@ class EquipmentControllerTest extends AbstractFunctionalTest
         $user->setWorkoutType(WorkoutType::Cardio);
         $user->setActivityLevel(ActivityLevel::Active);
         $user->setDesiredGoal(DesiredGoal::LoseWeight);
-        $user->setCharacterRace(CharacterRace::Orc);
         $user->setPassword($hasher->hashPassword($user, $password));
 
         $this->em->persist($user);

@@ -11,6 +11,7 @@ use App\Domain\Battle\Enum\BattleMode;
 use App\Domain\Character\Entity\CharacterStats;
 use App\Domain\Character\Entity\ExperienceLog;
 use App\Domain\Character\Enum\StatType;
+use App\Domain\Shared\Enum\Realm;
 use App\Domain\Workout\Entity\WorkoutPlan;
 use App\Infrastructure\Character\Repository\CharacterStatsRepository;
 use App\Infrastructure\Character\Repository\ExperienceLogRepository;
@@ -53,6 +54,7 @@ class BattleResultCalculator
         private readonly LevelingService $levelingService,
         private readonly ExperienceLogRepository $experienceLogRepository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly \App\Application\PsychProfile\Service\PsychStatusModifierService $psychModifier,
     ) {
     }
 
@@ -91,6 +93,13 @@ class BattleResultCalculator
         $durationSeconds = (int) ($healthData['duration'] ?? 0);
         $activityType = $this->determineActivityType($plan);
         $totalDamage = $this->calculateDamage($durationSeconds, $effectiveStats, $activityType, $trainingScore);
+
+        // Step 3b: Apply realm-match bonus (BUSINESS_LOGIC §12) — if any equipped
+        // artifact shares a realm with the current mob, damage is multiplied by 1.4.
+        $mobRealm = $this->resolveMobRealm($session);
+        if ($mobRealm !== null && $this->hasRealmBoundArtifactMatching($user, $mobRealm)) {
+            $totalDamage = $this->applyRealmMatchMultiplier($totalDamage);
+        }
 
         // Step 4: Count mobs defeated and raw XP from mobs
         $mobHp = $session->getMobHp() ?? 100;
@@ -547,15 +556,27 @@ class BattleResultCalculator
      */
     private function awardXp(\App\Domain\User\Entity\User $user, int $xpAmount, WorkoutSession $session): array
     {
+        // Apply psych status multiplier (1.00 when feature off / not opted in).
+        // Battle context per §4 of the psych spec — CHARGED gets +15% for
+        // new-challenge battles; other statuses keep 1.0 on battles.
+        $multiplier = $this->psychModifier->getXpMultiplier(
+            $user,
+            \App\Application\PsychProfile\Service\PsychStatusModifierService::CONTEXT_BATTLE,
+        );
+        if ($multiplier !== 1.0) {
+            $xpAmount = (int) round($xpAmount * $multiplier);
+        }
+
         // Create experience log entry
         $log = new ExperienceLog();
         $log->setUser($user);
         $log->setAmount($xpAmount);
         $log->setSource('battle');
         $log->setDescription(sprintf(
-            'Battle result: %s (%s mode)',
+            'Battle result: %s (%s mode, psych ×%.2f)',
             $session->getPerformanceTier() ?? 'unknown',
             $session->getMode()->value,
+            $multiplier,
         ));
         $this->entityManager->persist($log);
 
@@ -609,5 +630,41 @@ class BattleResultCalculator
         }
 
         return $this->settingsCache[$key] ?? $default;
+    }
+
+    /**
+     * Look up the realm of the mob linked to this session (if any).
+     * WorkoutSession may not always have a mob (legacy sessions), hence the null path.
+     */
+    private function resolveMobRealm(WorkoutSession $session): ?Realm
+    {
+        $mob = $session->getMob();
+
+        return $mob?->getRealm();
+    }
+
+    /**
+     * True if the user has an equipped artifact whose realm equals $mobRealm.
+     * We iterate the already-cheap equipped set (<=12 items per user).
+     */
+    private function hasRealmBoundArtifactMatching(\App\Domain\User\Entity\User $user, Realm $mobRealm): bool
+    {
+        foreach ($this->userInventoryRepository->findEquippedByUser($user) as $inventoryItem) {
+            $catalog = $inventoryItem->getItemCatalog();
+            if ($catalog->getRealm() === $mobRealm) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Apply the +40% realm-match damage multiplier (BUSINESS_LOGIC §12).
+     * Multiplier factor is expressed as a constant to match the doc exactly.
+     */
+    public function applyRealmMatchMultiplier(int $totalDamage): int
+    {
+        return (int) round($totalDamage * 1.4);
     }
 }
