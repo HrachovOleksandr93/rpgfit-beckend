@@ -116,12 +116,15 @@ final class CrisisDetectionServiceTest extends TestCase
         $user = $this->makeUser($userId);
 
         $checkIns = $this->createMock(PsychCheckInRepository::class);
-        $checkIns->method('findInRange')->willReturn(array_fill(
-            0,
-            5,
+        // 5 unique-date WEARY days in the 7-day window — dedupe-by-date
+        // means we need 5 distinct daysAgo values, not 5 copies of day=0.
+        $checkIns->method('findInRange')->willReturn([
             $this->makeRow(PsychStatus::WEARY, 0),
-        ));
-        // The 5-of-7 threshold is met (5 rows, all WEARY).
+            $this->makeRow(PsychStatus::WEARY, 1),
+            $this->makeRow(PsychStatus::WEARY, 2),
+            $this->makeRow(PsychStatus::WEARY, 3),
+            $this->makeRow(PsychStatus::WEARY, 4),
+        ]);
 
         $recentFlag = (new GameSetting())
             ->setCategory('psych')
@@ -159,11 +162,14 @@ final class CrisisDetectionServiceTest extends TestCase
         $user = $this->makeUser($userId);
 
         $checkIns = $this->createMock(PsychCheckInRepository::class);
-        $checkIns->method('findInRange')->willReturn(array_fill(
-            0,
-            5,
+        // 5 unique-date crisis days (same fix as the prior test).
+        $checkIns->method('findInRange')->willReturn([
             $this->makeRow(PsychStatus::SCATTERED, 0),
-        ));
+            $this->makeRow(PsychStatus::SCATTERED, 1),
+            $this->makeRow(PsychStatus::SCATTERED, 2),
+            $this->makeRow(PsychStatus::SCATTERED, 3),
+            $this->makeRow(PsychStatus::SCATTERED, 4),
+        ]);
 
         $oldFlag = (new GameSetting())
             ->setCategory('psych')

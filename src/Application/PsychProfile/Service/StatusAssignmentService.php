@@ -31,7 +31,7 @@ use App\Infrastructure\Config\Repository\GameSettingRepository;
  * absent or malformed, a hardcoded fallback (mirroring §3) kicks in so
  * dev environments stay usable before seed migrations run.
  */
-final class StatusAssignmentService
+class StatusAssignmentService
 {
     public const SETTING_KEY = 'psych.status_rules';
 
@@ -71,8 +71,17 @@ final class StatusAssignmentService
         if ($setting !== null) {
             $decoded = json_decode($setting->getValue(), true);
             if (is_array($decoded) && $decoded !== []) {
-                /** @var list<array<string, mixed>> $decoded */
-                return array_values($decoded);
+                // Defensive: a malformed blob (e.g. mixed strings) collapses
+                // to the fallback. Individual non-array entries are stripped
+                // so ruleMatches never sees a string.
+                $sanitised = array_values(array_filter(
+                    $decoded,
+                    static fn($rule): bool => is_array($rule) && isset($rule['when']) && is_array($rule['when']),
+                ));
+                if ($sanitised !== []) {
+                    /** @var list<array<string, mixed>> $sanitised */
+                    return $sanitised;
+                }
             }
         }
 

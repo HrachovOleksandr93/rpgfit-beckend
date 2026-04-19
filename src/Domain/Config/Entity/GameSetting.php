@@ -38,7 +38,7 @@ class GameSetting
     private string $key;
 
     /** Raw string value (cast to int/float by the consuming service). */
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(type: 'string', length: 2048)]
     private string $value;
 
     /** Human-readable explanation of what this setting controls. */
