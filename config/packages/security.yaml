@@ -1,6 +1,14 @@
 security:
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    # Test-harness role hierarchy (Phase 5). Each tier inherits the one below,
+    # so a ROLE_SUPERADMIN implicitly carries ROLE_ADMIN, ROLE_TESTER, ROLE_USER.
+    role_hierarchy:
+        ROLE_TESTER: ROLE_USER
+        ROLE_ADMIN: ROLE_TESTER
+        ROLE_SUPERADMIN: ROLE_ADMIN
+
     providers:
         app_user_provider:
             entity:
@@ -33,6 +41,10 @@ security:
             stateless: true
 
     access_control:
+        # Public marketing landing (must precede the ^/api catch-all).
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+        - { path: ^/healthz$, roles: PUBLIC_ACCESS }
+        - { path: ^/assets, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/registration, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/oauth, roles: PUBLIC_ACCESS }

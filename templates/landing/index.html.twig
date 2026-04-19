@@ -1,0 +1,365 @@
+{% extends 'landing_base.html.twig' %}
+
+{# Landing page for public marketing — 07 Vector Field design language.
+   Ukrainian copy primary. Server-rendered, no JS framework, semantic HTML5. #}
+
+{% block title %}RPGFit — Vector Field · польовий інструмент VERA-ICS{% endblock %}
+
+{% block meta_description %}RPGFit — твій смартфон як польовий Vector VERA-ICS. Натив HealthKit, порталі в 15 локаціях, Day of Розкол — 31.10.2026. Приєднуйся до 4 700 операторів.{% endblock %}
+
+{% block og_title %}RPGFit — Year of the Rupture · 2042{% endblock %}
+{% block og_description %}You are one of 4,700 operators. Your phone is a Vector. Your body is the sensor.{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "RPGFit",
+  "alternateName": "VERA-ICS Expedition",
+  "url": "{{ absolute_url(path('landing')) }}",
+  "logo": "{{ absolute_url(asset('assets/landing/logo.svg')) }}",
+  "description": "Польовий фітнес-інструмент у лорі Щілини ВЕРА. Ваш смартфон — Vector, ваше тіло — сенсор.",
+  "sameAs": []
+}
+</script>
+{% endblock %}
+
+{% block body %}
+    {# ──────────────────────────────────────────────────────────────────── #}
+    {# Skip link for keyboard users                                         #}
+    {# ──────────────────────────────────────────────────────────────────── #}
+    <a class="skip-link" href="#main">Пропустити навігацію</a>
+
+    {# ──────────────────────────────────────────────────────────────────── #}
+    {# Top header — wordmark + primary CTA                                  #}
+    {# ──────────────────────────────────────────────────────────────────── #}
+    <header class="site-header" role="banner">
+        <div class="container header-inner">
+            <a href="#" class="wordmark" aria-label="VERA-ICS — на головну">
+                <span class="wordmark-mark" aria-hidden="true">◈</span>
+                <span class="wordmark-text">VERA-ICS</span>
+                <span class="wordmark-serial" aria-hidden="true">VF-07/42</span>
+            </a>
+            <nav class="site-nav" aria-label="Головна навігація">
+                <a class="nav-link" href="#pitch">Що всередині</a>
+                <a class="nav-link" href="#realms">Реалми</a>
+                <a class="nav-link" href="#how">Як почати</a>
+                <a class="nav-link" href="#faq">FAQ</a>
+                <a class="btn btn-copper btn-sm" href="#begin" data-cta="header">Join the expedition →</a>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main">
+        {# ──────────────────────────────────────────────────────────── #}
+        {# HERO — Year of the Rupture                                   #}
+        {# ──────────────────────────────────────────────────────────── #}
+        <section class="hero" id="hero" aria-labelledby="hero-title">
+            <div class="container">
+                <div class="panel crosshair hero-panel">
+                    <p class="section-label hero-label">Expedition Log · Entry 001</p>
+
+                    <p class="hero-eyebrow">YEAR OF THE RUPTURE</p>
+
+                    <h1 id="hero-title" class="hero-year calipers" aria-label="Year 2042">2042</h1>
+
+                    <p class="hero-copy">
+                        Ти — один з <strong>4&nbsp;700 операторів</strong>.<br>
+                        Твій смартфон — <em>Vector</em>. Твоє тіло — сенсор.
+                    </p>
+
+                    <p class="hero-copy-en" lang="en">
+                        You are one of 4,700 operators. Your phone is a Vector. Your body is the sensor.
+                    </p>
+
+                    <div class="hero-ctas">
+                        <a id="begin" class="btn btn-copper" href="#how" data-cta="hero-primary" aria-label="Почати калібрування інструменту">
+                            ▸ Begin calibration
+                        </a>
+                        <a class="btn btn-ghost" href="#pitch" data-cta="hero-secondary">
+                            Що це взагалі таке?
+                        </a>
+                    </div>
+
+                    <ul class="hero-meta" role="list">
+                        <li><span class="mono-tag">● STATUS</span> field-ready</li>
+                        <li><span class="mono-tag">● LAUNCH</span> 31.10.2026</li>
+                        <li><span class="mono-tag">● SENSOR</span> native HealthKit · Health Connect</li>
+                    </ul>
+                </div>
+
+                <div class="hero-signature" aria-hidden="true">
+                    <span class="mono-xs">VF-07/42 · 50.452°N · 30.523°E</span>
+                </div>
+            </div>
+        </section>
+
+        {# ──────────────────────────────────────────────────────────── #}
+        {# PITCH — bento: health, portals, launch                       #}
+        {# ──────────────────────────────────────────────────────────── #}
+        <section class="pitch" id="pitch" aria-labelledby="pitch-title">
+            <div class="container">
+                <p class="section-label">Core readings · Tick 01</p>
+                <h2 id="pitch-title" class="section-title">Інструмент, не гра</h2>
+                <p class="section-sub">RPGFit — asistent, який допомагає ставати кращим. Лор — це рамка, не перешкода.</p>
+
+                <div class="bento">
+                    <article class="bento-tile">
+                        <div class="bento-head">
+                            <span class="tag tag-sage">01 · Sensor</span>
+                            <span class="mono-xs">HR · STEPS · SLEEP</span>
+                        </div>
+                        <h3 class="bento-title">Твоє здоров&rsquo;я — у колі</h3>
+                        <p class="bento-body">
+                            Натив HealthKit (iOS) і Health Connect (Android). Удари серця перетворюються на шкоду мобу в реальному часі. Без Terra API, без посередників — дані йдуть прямо з твого годинника.
+                        </p>
+                        <ul class="bento-stats" role="list">
+                            <li><span class="mono-md">&lt;1с</span> <span class="mono-xs">iOS latency</span></li>
+                            <li><span class="mono-md">15</span> <span class="mono-xs">health data types</span></li>
+                            <li><span class="mono-md">on-device</span> <span class="mono-xs">privacy by default</span></li>
+                        </ul>
+                    </article>
+
+                    <article class="bento-tile">
+                        <div class="bento-head">
+                            <span class="tag tag-copper">02 · Portals</span>
+                            <span class="mono-xs">15 RUPTURE POINTS</span>
+                        </div>
+                        <h3 class="bento-title">Точки Розколу по світу</h3>
+                        <p class="bento-body">
+                            Статичні портали у реальних локаціях. Мйольнір чекає на Галдхьопігені. Тризуб Посейдона — на дні біля Санторіні. Сокира Перуна — на дні Дніпра біля Канева. Твої тренування стають експедиціями.
+                        </p>
+                        <ul class="bento-stats" role="list">
+                            <li><span class="mono-md">15</span> <span class="mono-xs">static landmarks</span></li>
+                            <li><span class="mono-md">T1–T3</span> <span class="mono-xs">artifact tiers</span></li>
+                            <li><span class="mono-md">6</span> <span class="mono-xs">realm signatures</span></li>
+                        </ul>
+                    </article>
+
+                    <article class="bento-tile bento-tile-highlight">
+                        <div class="bento-head">
+                            <span class="tag tag-amber">03 · Event</span>
+                            <span class="mono-xs">COUNTDOWN LIVE</span>
+                        </div>
+                        <h3 class="bento-title">Day of Розкол — 31.10.2026</h3>
+                        <p class="bento-body">
+                            Перший глобальний event. Спец-моби усіх шести реалмів, координовані рейди, community-feed. Це не «релізний день» — це перша лоранікальна операція VERA-ICS.
+                        </p>
+
+                        <div class="countdown" aria-label="Launch countdown — placeholder">
+                            <div class="countdown-cell"><span class="mono-lg">—</span><span class="mono-xs">days</span></div>
+                            <div class="countdown-cell"><span class="mono-lg">—</span><span class="mono-xs">hrs</span></div>
+                            <div class="countdown-cell"><span class="mono-lg">—</span><span class="mono-xs">min</span></div>
+                            <div class="countdown-cell"><span class="mono-lg">—</span><span class="mono-xs">sec</span></div>
+                        </div>
+
+                        <a class="btn btn-copper btn-block" href="#begin" data-cta="bento-launch">
+                            ▸ Join the launch event
+                        </a>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        {# ──────────────────────────────────────────────────────────── #}
+        {# REALMS — 6 mythology chips                                   #}
+        {# ──────────────────────────────────────────────────────────── #}
+        <section class="realms" id="realms" aria-labelledby="realms-title">
+            <div class="container">
+                <p class="section-label">Universe · 6 realms canonical</p>
+                <h2 id="realms-title" class="section-title">Шість реалмів крізь Щілину</h2>
+                <p class="section-sub">
+                    Ти не обираєш «свій реалм» і не воюєш проти інших людей. Тут немає фракцій. Реалм — це тематика порталу, артефакту й моба. Всі людство — на одній стороні.
+                </p>
+
+                <ul class="realm-grid" role="list">
+                    <li class="realm-chip">
+                        <span class="realm-num">01</span>
+                        <span class="realm-glyph" aria-hidden="true">♆</span>
+                        <span class="realm-name">Олімп</span>
+                        <span class="realm-en" lang="en">Olympus</span>
+                        <span class="realm-tag">Грецька · боги шукають паству</span>
+                    </li>
+                    <li class="realm-chip">
+                        <span class="realm-num">02</span>
+                        <span class="realm-glyph" aria-hidden="true">⚒</span>
+                        <span class="realm-name">Асгард</span>
+                        <span class="realm-en" lang="en">Asgard</span>
+                        <span class="realm-tag">Скандинавська · світ руйнується</span>
+                    </li>
+                    <li class="realm-chip">
+                        <span class="realm-num">03</span>
+                        <span class="realm-glyph" aria-hidden="true">☸</span>
+                        <span class="realm-name">Дхарма</span>
+                        <span class="realm-en" lang="en">Dharma</span>
+                        <span class="realm-tag">Буддизм + Індуїзм · Деви vs Асури</span>
+                    </li>
+                    <li class="realm-chip">
+                        <span class="realm-num">04</span>
+                        <span class="realm-glyph" aria-hidden="true">𓂀</span>
+                        <span class="realm-name">Ду&rsquo;ат</span>
+                        <span class="realm-en" lang="en">Duat</span>
+                        <span class="realm-tag">Єгипетська · Маат проти Хаосу</span>
+                    </li>
+                    <li class="realm-chip">
+                        <span class="realm-num">05</span>
+                        <span class="realm-glyph" aria-hidden="true">✵</span>
+                        <span class="realm-name">Нав</span>
+                        <span class="realm-en" lang="en">Nav</span>
+                        <span class="realm-tag">Слов&rsquo;янська · це не вторгнення, а повернення</span>
+                    </li>
+                    <li class="realm-chip">
+                        <span class="realm-num">06</span>
+                        <span class="realm-glyph" aria-hidden="true">☉</span>
+                        <span class="realm-name">Шиба</span>
+                        <span class="realm-en" lang="en">Shiba</span>
+                        <span class="realm-tag">Ацтекська + Майянська · кінець 5-го Сонця</span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        {# ──────────────────────────────────────────────────────────── #}
+        {# HOW — 3 steps                                                 #}
+        {# ──────────────────────────────────────────────────────────── #}
+        <section class="how" id="how" aria-labelledby="how-title">
+            <div class="container">
+                <p class="section-label">Activation sequence</p>
+                <h2 id="how-title" class="section-title">Три кроки до першого виходу</h2>
+
+                <ol class="how-steps" role="list">
+                    <li class="how-step">
+                        <span class="how-num calipers">01</span>
+                        <h3 class="how-step-title">Встанови</h3>
+                        <p class="how-step-body">
+                            Скачай Vector на iOS або Android. Apple Watch, Garmin, Whoop, Fitbit — вже підтримуються через native bridge.
+                        </p>
+                        <p class="how-step-meta mono-xs">Reading: install · integrity check</p>
+                    </li>
+                    <li class="how-step">
+                        <span class="how-num calipers">02</span>
+                        <h3 class="how-step-title">Відкалібруй</h3>
+                        <p class="how-step-body">
+                            Увімкни дозволи на Heart rate, Steps, Sleep, Workouts. Це займе 60 секунд і лишається на твоєму пристрої — агреговане XP лиш синкається шифровано.
+                        </p>
+                        <p class="how-step-meta mono-xs">Reading: sensor integrity 60% → 100%</p>
+                    </li>
+                    <li class="how-step">
+                        <span class="how-num calipers">03</span>
+                        <h3 class="how-step-title">Вирушай</h3>
+                        <p class="how-step-body">
+                            Обери найближчу тріщину, стисни «Engage». Кожен удар серця — це шкода мобу. Кожен крок — прогрес експедиції.
+                        </p>
+                        <p class="how-step-meta mono-xs">Reading: first engagement logged</p>
+                    </li>
+                </ol>
+
+                <div class="how-cta">
+                    <a class="btn btn-copper" href="#begin" data-cta="how-end">▸ Begin calibration</a>
+                </div>
+            </div>
+        </section>
+
+        {# ──────────────────────────────────────────────────────────── #}
+        {# FAQ — 4 questions (native <details> — no JS)                 #}
+        {# ──────────────────────────────────────────────────────────── #}
+        <section class="faq" id="faq" aria-labelledby="faq-title">
+            <div class="container">
+                <p class="section-label">Pre-deployment questions</p>
+                <h2 id="faq-title" class="section-title">Питання, які приходять першими</h2>
+
+                <div class="faq-list">
+                    <details class="faq-item">
+                        <summary class="faq-q">
+                            <span class="faq-num mono-xs">Q1</span>
+                            <span>Які телефони підтримуються?</span>
+                            <span class="faq-chev" aria-hidden="true">＋</span>
+                        </summary>
+                        <div class="faq-a">
+                            <p>iOS 15+ та Android 10+ (Health Connect). Apple Watch Series 4+, Garmin (всі сучасні), Whoop 4.0, Fitbit (через нативний бридж). Ми не використовуємо Terra/Vital — тільки прямий нативний зв&rsquo;язок, тому лаги мінімальні.</p>
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary class="faq-q">
+                            <span class="faq-num mono-xs">Q2</span>
+                            <span>Це платно?</span>
+                            <span class="faq-chev" aria-hidden="true">＋</span>
+                        </summary>
+                        <div class="faq-a">
+                            <p>Beta — <strong>повністю безкоштовна</strong>. Після релізу — freemium: основна петля (тренування → експедиції → артефакти) залишається безкоштовно. Косметика та Portal Creation Kit — premium. Ніякої pay-to-win механіки.</p>
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary class="faq-q">
+                            <span class="faq-num mono-xs">Q3</span>
+                            <span>Чи безпечні мої дані здоров&rsquo;я?</span>
+                            <span class="faq-chev" aria-hidden="true">＋</span>
+                        </summary>
+                        <div class="faq-a">
+                            <p>Сирі показники (HR, steps, sleep) <strong>не залишають твій пристрій</strong>. На сервер відправляється лише агрегований XP — шифрованим каналом. Ми не продаємо дані, не передаємо брокерам, не використовуємо для реклами. Повна політика буде доступна перед beta.</p>
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary class="faq-q">
+                            <span class="faq-num mono-xs">Q4</span>
+                            <span>Коли стартує beta?</span>
+                            <span class="faq-chev" aria-hidden="true">＋</span>
+                        </summary>
+                        <div class="faq-a">
+                            <p>Day of Розкол — <strong>31 жовтня 2026</strong>. Перші 4 700 операторів — беруть участь у найпершому глобальному event&rsquo;і. Вступ за запрошенням — залиш свій email на наступному кроці (форма запуститься найближчими днями).</p>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    {# ──────────────────────────────────────────────────────────────────── #}
+    {# Footer                                                              #}
+    {# ──────────────────────────────────────────────────────────────────── #}
+    <footer class="site-footer" role="contentinfo">
+        <div class="container footer-inner">
+            <div class="footer-brand">
+                <div class="wordmark">
+                    <span class="wordmark-mark" aria-hidden="true">◈</span>
+                    <span class="wordmark-text">VERA-ICS</span>
+                </div>
+                <p class="footer-tag">Польовий інструмент. Не гра. Не корпорація. Експедиція.</p>
+                <p class="footer-serial mono-xs">VF-07/42-01.01 · © 2026 RPGFit</p>
+            </div>
+
+            <nav class="footer-nav" aria-label="Footer navigation">
+                <div class="footer-col">
+                    <h3 class="footer-col-title">Product</h3>
+                    <ul>
+                        <li><a href="#pitch">What is it</a></li>
+                        <li><a href="#realms">Realms</a></li>
+                        <li><a href="#how">How to start</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3 class="footer-col-title">Community</h3>
+                    <ul>
+                        <li><a href="#" rel="noopener">Discord <span class="mono-xs">(soon)</span></a></li>
+                        <li><a href="#" rel="noopener">Reddit <span class="mono-xs">(soon)</span></a></li>
+                        <li><a href="#" rel="noopener">TikTok <span class="mono-xs">(soon)</span></a></li>
+                        <li><a href="#" rel="noopener">Twitter / X <span class="mono-xs">(soon)</span></a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h3 class="footer-col-title">Legal</h3>
+                    <ul>
+                        <li><a href="#">Privacy policy</a></li>
+                        <li><a href="#">Data handling</a></li>
+                        <li><a href="#">Terms of expedition</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </footer>
+{% endblock %}
