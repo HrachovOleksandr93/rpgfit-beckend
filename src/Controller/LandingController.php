@@ -30,7 +30,7 @@ class LandingController extends AbstractController
         // The landing is static marketing — safe to cache aggressively.
         $response->setPublic();
         $response->setMaxAge(300);
-        $response->headers->addCacheControlDirective('stale-while-revalidate', 600);
+        $response->headers->addCacheControlDirective('stale-while-revalidate', '600');
 
         return $response;
     }
