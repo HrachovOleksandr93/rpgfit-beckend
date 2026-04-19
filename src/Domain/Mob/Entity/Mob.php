@@ -94,7 +94,7 @@ class Mob
      *
      * @var string[]
      */
-    #[ORM\Column(type: 'json', options: ['default' => '[]'])]
+    #[ORM\Column(type: 'json')]
     private array $visualKeywords = [];
 
     /** Whether this record represents a champion variant (10-15% spawn roll). */

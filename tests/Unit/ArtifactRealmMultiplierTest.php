@@ -102,7 +102,10 @@ class ArtifactRealmMultiplierTest extends TestCase
             skillRepository: $this->createMock(SkillRepository::class),
             itemCatalogRepository: $this->createMock(ItemCatalogRepository::class),
             mobRepository: $this->createMock(MobRepository::class),
-            levelingService: $this->createMock(LevelingService::class),
+            // LevelingService is final — use a partial reflection proxy. The
+            // realm-match path under test never calls into it, so a bare
+            // uninitialized instance is sufficient.
+            levelingService: (new \ReflectionClass(LevelingService::class))->newInstanceWithoutConstructor(),
             experienceLogRepository: $this->createMock(ExperienceLogRepository::class),
             entityManager: $this->createMock(EntityManagerInterface::class),
         );

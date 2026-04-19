@@ -39,6 +39,9 @@ security:
         - { path: ^/api/docs, roles: PUBLIC_ACCESS }
         - { path: ^/api/levels/table, roles: PUBLIC_ACCESS }
         - { path: ^/api/mobs, roles: PUBLIC_ACCESS }
+        # Portal reads are public; the dynamic-create endpoint still requires JWT
+        # because it's guarded at the controller level via #[IsGranted].
+        - { path: ^/api/portals, methods: [GET], roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

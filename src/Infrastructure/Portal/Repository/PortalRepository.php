@@ -7,7 +7,6 @@ namespace App\Infrastructure\Portal\Repository;
 use App\Domain\Portal\Entity\Portal;
 use App\Domain\Portal\Enum\PortalType;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -82,71 +81,51 @@ class PortalRepository extends ServiceEntityRepository
 
         // Rough bounding box: 1 deg of latitude ~= 111.32 km.
         $latDelta = $radiusKm / 111.32;
-        // Longitude degrees shrink with latitude; guard against cos(0) = 0 at the equator still being >0.
+        // Longitude degrees shrink with latitude; guard against near-zero cosine at poles.
         $cosLat = max(0.000001, cos(deg2rad($lat)));
         $lngDelta = $radiusKm / (111.32 * $cosLat);
 
-        $conn = $this->getEntityManager()->getConnection();
+        // Step 1 — bounding-box filter via Doctrine QueryBuilder. This hits the
+        // (latitude, longitude) composite index on MySQL and works identically on
+        // SQLite (used in functional tests). Avoiding raw SQL keeps the query
+        // cross-platform; ST_Distance_Sphere / BIN_TO_UUID aren't portable.
+        $now = new \DateTimeImmutable();
+        $qb = $this->createQueryBuilder('p')
+            ->where('p.latitude BETWEEN :minLat AND :maxLat')
+            ->andWhere('p.longitude BETWEEN :minLng AND :maxLng')
+            ->andWhere('p.expiresAt IS NULL OR p.expiresAt > :now')
+            ->setParameter('minLat', $lat - $latDelta)
+            ->setParameter('maxLat', $lat + $latDelta)
+            ->setParameter('minLng', $lng - $lngDelta)
+            ->setParameter('maxLng', $lng + $lngDelta)
+            ->setParameter('now', $now);
 
-        // Fetch candidate IDs + precomputed distance in km using Haversine.
-        $sql = <<<'SQL'
-            SELECT
-                BIN_TO_UUID(p.id) AS id,
-                (
-                    6371 * ACOS(
-                        LEAST(1.0, GREATEST(-1.0,
-                            COS(RADIANS(:lat)) * COS(RADIANS(p.latitude)) *
-                            COS(RADIANS(p.longitude) - RADIANS(:lng)) +
-                            SIN(RADIANS(:lat)) * SIN(RADIANS(p.latitude))
-                        ))
-                    )
-                ) AS distance_km
-            FROM portals p
-            WHERE p.latitude BETWEEN :minLat AND :maxLat
-              AND p.longitude BETWEEN :minLng AND :maxLng
-              AND (p.expires_at IS NULL OR p.expires_at > :now)
-            HAVING distance_km <= :radius
-            ORDER BY distance_km ASC
-            LIMIT :limit
-        SQL;
-
-        $stmt = $conn->prepare($sql);
-        $stmt->bindValue('lat', $lat);
-        $stmt->bindValue('lng', $lng);
-        $stmt->bindValue('minLat', $lat - $latDelta);
-        $stmt->bindValue('maxLat', $lat + $latDelta);
-        $stmt->bindValue('minLng', $lng - $lngDelta);
-        $stmt->bindValue('maxLng', $lng + $lngDelta);
-        $stmt->bindValue('radius', $radiusKm);
-        $stmt->bindValue('now', (new \DateTimeImmutable())->format('Y-m-d H:i:s'));
-        $stmt->bindValue('limit', $limit, ParameterType::INTEGER);
-
-        $rows = $stmt->executeQuery()->fetchAllAssociative();
-        if ($rows === []) {
+        $candidates = $qb->getQuery()->getResult();
+        if ($candidates === []) {
             return [];
         }
 
-        // Load entities in one query, preserving order + distance.
-        $ids = array_column($rows, 'id');
-        $entities = $this->createQueryBuilder('p')
-            ->where('p.id IN (:ids)')
-            ->setParameter('ids', $ids)
-            ->getQuery()
-            ->getResult();
-
-        $byId = [];
-        foreach ($entities as $entity) {
-            $byId[$entity->getId()->toRfc4122()] = $entity;
-        }
-
+        // Step 2 — precise Haversine in PHP. Portal counts stay tiny (<10k
+        // static + a few hundred dynamic per region) so this is O(n) on a
+        // small set post-bbox. Simpler than coping with DB-specific math.
+        $earthKm = 6371.0;
         $result = [];
-        foreach ($rows as $row) {
-            $portal = $byId[$row['id']] ?? null;
-            if ($portal !== null) {
-                $result[] = ['portal' => $portal, 'distanceKm' => (float) $row['distance_km']];
+        foreach ($candidates as $portal) {
+            $pLat = (float) $portal->getLatitude();
+            $pLng = (float) $portal->getLongitude();
+            $dLat = deg2rad($pLat - $lat);
+            $dLng = deg2rad($pLng - $lng);
+            $a = sin($dLat / 2) ** 2
+                + cos(deg2rad($lat)) * cos(deg2rad($pLat)) * sin($dLng / 2) ** 2;
+            $a = max(0.0, min(1.0, $a));
+            $distance = 2 * $earthKm * asin(sqrt($a));
+            if ($distance <= $radiusKm) {
+                $result[] = ['portal' => $portal, 'distanceKm' => $distance];
             }
         }
 
-        return $result;
+        usort($result, static fn(array $a, array $b): int => $a['distanceKm'] <=> $b['distanceKm']);
+
+        return array_slice($result, 0, $limit);
     }
 }

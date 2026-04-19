@@ -73,7 +73,7 @@ class Portal
      *
      * @var array<string, mixed>
      */
-    #[ORM\Column(type: 'json', options: ['default' => '{}'])]
+    #[ORM\Column(type: 'json')]
     private array $challengeParams = [];
 
     /** Slug of the artifact awarded on portal completion (nullable). */
