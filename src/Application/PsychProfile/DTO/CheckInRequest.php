@@ -36,6 +36,14 @@ final class CheckInRequest
     #[Assert\Type('bool')]
     public bool $skipped = false;
 
+    /**
+     * Psych v2 (spec §1.2) — optional 1..5 session-RPE. Only accepted
+     * when `skipped` is false; otherwise silently ignored at the service
+     * layer.
+     */
+    #[Assert\Range(min: 1, max: 5)]
+    public ?int $rpeScore = null;
+
     /** @return list<string> */
     public static function moodChoices(): array
     {
@@ -56,6 +64,7 @@ final class CheckInRequest
         $dto->energy = isset($data['energy']) ? (int) $data['energy'] : null;
         $dto->intent = isset($data['intent']) ? (string) $data['intent'] : null;
         $dto->skipped = (bool) ($data['skipped'] ?? false);
+        $dto->rpeScore = isset($data['rpeScore']) ? (int) $data['rpeScore'] : null;
 
         return $dto;
     }

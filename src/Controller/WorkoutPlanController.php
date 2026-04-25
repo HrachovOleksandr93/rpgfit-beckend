@@ -70,9 +70,14 @@ class WorkoutPlanController extends AbstractController
         $dateStr = $data['date'] ?? null;
         $date = $dateStr !== null ? new \DateTimeImmutable($dateStr) : null;
 
-        $plan = $this->generatorService->generatePlan($user, $activityCategory, $date);
+        // Psych v2 (spec §1.3 + §1.4) — generator applies the adapter
+        // deltas and returns the adaptation so we can surface warningCopy.
+        $result = $this->generatorService->generatePlanWithAdaptation($user, $activityCategory, $date);
 
-        return $this->json(['plan' => $this->serializePlan($plan)]);
+        return $this->json([
+            'plan' => $this->serializePlan($result->plan),
+            'psychAdaptation' => $result->adaptation->toArray(),
+        ]);
     }
 
     /**

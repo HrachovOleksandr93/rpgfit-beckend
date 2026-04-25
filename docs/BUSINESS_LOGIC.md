@@ -910,3 +910,141 @@ a given status so Playwright can trigger crisis-detection without
 waiting real days. Respects both the `APP_TESTING_ENABLED` kill-switch
 and `PSYCH_PROFILER_ENABLED`.
 
+---
+
+### 14.1 Psych Profiler v2 (spec 2026-04-19)
+
+Spec:
+[`docs/superpowers/specs/2026-04-19-psych-v2-impl.md`](./superpowers/specs/2026-04-19-psych-v2-impl.md).
+Vision:
+[`docs/vision/psych-profiler-v2-workout-adaptive.md`](./vision/psych-profiler-v2-workout-adaptive.md).
+
+v2 is additive — all v1 rules above remain. The spec **explicitly drops**
+catharsis logic, the 3-strike rail, EAI monitoring, and the bad-mood
+intent picker. Scope is: state assessment + workout adaptation +
+warning + deload suggestion.
+
+#### V2 feature flag
+
+- Env var `PSYCH_PROFILER_V2_ENABLED` (default OFF) **or** game_setting
+  `feature.psych_profiler.v2.enabled`. When OFF:
+  - v2-only endpoints return `404`.
+  - `POST /api/psych/check-in` silently ignores the `rpeScore` field.
+  - `XpAwardService` skips the completion-bonus path — baseline XP.
+  - `WorkoutPlanGeneratorService` returns a zero-delta adaptation.
+
+#### Q4 — physical state (spec §1.2)
+
+Post-workout session-RPE 1..5 (text-only anchors). Recorded via
+`POST /api/psych/physical-state` or merged into `POST /api/psych/check-in`
+when submitted within a 2h window. Q4 does NOT change `PsychStatus`;
+it feeds `PsychWorkoutAdapterService`.
+
+Entity: `PhysicalStateAnswer` (table `physical_state_answers`,
+BINARY(16) UUIDs, FK to users + workout_sessions with SET NULL).
+
+`PsychCheckIn` gains a nullable `physical_state_answer_id` FK so a
+daily check-in can point at the Q4 row that was merged into it.
+
+#### Completion XP bonus (spec §1.1)
+
+A full Q1-Q3 answer (non-skip) sets an eligibility marker
+`psych.bonus_marker_{userId}_{Ymd}` in `game_settings`. On the next
+health-sync `XpAwardService` applies +10% AFTER the status multiplier
+and writes an idempotency marker `psych.bonus_applied_{userId}_{Ymd}`.
+Weekly cap = 5 applied markers in any rolling 7-day window.
+
+Description string: `XP from health data sync (psych ×A.BB ×bonusC.DD bonus)`
+when both fire; falls back to the v1 format otherwise.
+
+#### Workout adaptation matrix (spec §1.3)
+
+`PsychWorkoutAdapterService::adapt(User): WorkoutPlanAdaptation` reads
+the JSON matrix from `game_settings.psych.adapter_matrix` (falls back
+to the hardcoded §1.3 table when missing). Matrix shape:
+
+| status | rpeMin | rpeMax | intensity | volume | duration | focus | warning |
+|--------|-------:|-------:|----------:|-------:|---------:|-------|---------|
+| CHARGED | 1 | 2 | +0.10 | +0.10 | 0 | new-challenge | — |
+| CHARGED | — | — | 0 | 0 | 0 | new-challenge | — |
+| STEADY | — | — | 0 | 0 | 0 | baseline | — |
+| DORMANT | — | — | −0.20 | −0.15 | −0.20 | mobility | ... легке. |
+| WEARY | 4 | 5 | −0.35 | −0.35 | −0.30 | recovery-only | Сильна втома... |
+| WEARY | — | — | −0.25 | −0.25 | −0.20 | recovery | Ми фіксуємо... |
+| SCATTERED | — | — | −0.15 | −0.15 | −0.10 | focus | Сигнал рваний... |
+
+**Asymmetric rule:** the adapter only RAISES load when:
+1. `status == CHARGED`,
+2. last Q4 ≤ 2 (or absent),
+3. NO WEARY / SCATTERED check-ins in the last 3 days.
+
+Otherwise the row with positive deltas is skipped and the next matching
+row (baseline) wins.
+
+`WorkoutPlanGeneratorService` calls `applyPsychAdaptation()` after
+generating the plan. Volume delta scales `sets` on each
+`WorkoutPlanExercise`; duration delta scales `targetDuration`;
+intensity delta composes with `difficultyModifier`. The adaptation and
+its `warningCopy` are surfaced via
+`generatePlanWithAdaptation(): WorkoutPlanGenerationResult`.
+
+#### Deload suggestion (spec §1.5)
+
+`CrisisDetectionService::getWearyStreakDays(User)` returns the number
+of consecutive days (ending today) where the assigned status was WEARY
+or SCATTERED. Missing days and other statuses break the streak.
+
+`GET /api/psych/deload-suggestion` returns:
+```json
+{ "showCard": bool, "streakDays": int, "recommendedPlan": {...}|null }
+```
+
+- Days 5-6 → `showCard = true`, `recommendedPlan = null`.
+- Day 7+ → `recommendedPlan` is the pre-generated deload shell
+  (−40% volume, −30% intensity, 7 days, recovery focus).
+
+Thresholds live in `game_settings` (`psych.deload_card_start_day`,
+`psych.deload_plan_start_day`, `psych.deload_volume_reduction_pct`,
+`psych.deload_intensity_reduction_pct`).
+
+#### Privacy / GDPR (v2 additions)
+
+- `physical_state_answers` rows are GDPR non-special — perceived
+  exertion is not Art. 9 data.
+- Retention shared with v1 (`psych.retention_days` = 180).
+- Export endpoint adds `rpeScore` to each check-in item.
+- Hard erase (`DELETE /api/psych/history`) and opt-out-with-erase both
+  wipe `physical_state_answers` alongside `psych_check_ins`.
+
+#### Test-harness v2 additions
+
+- `POST /api/test/psych/seed` accepts optional `rpeScore` and
+  `completionBonusApplied` flags.
+- `POST /api/test/psych/rpe` seeds a single Q4 row for today.
+- `POST /api/test/psych/bonus-marker` seeds a completion-bonus
+  eligibility marker for today.
+
+#### V2 game_settings keys
+
+| Key | Default | Purpose |
+|-----|--------:|---------|
+| `psych.completion_bonus_pct` | 10 | % bonus added on full check-in day |
+| `psych.completion_bonus_weekly_cap` | 5 | Max days per rolling 7d window |
+| `psych.adapter_matrix` | — | JSON matrix (spec §1.3) |
+| `psych.deload_card_start_day` | 5 | Streak day at which card appears |
+| `psych.deload_plan_start_day` | 7 | Streak day at which plan offered |
+| `psych.deload_volume_reduction_pct` | 40 | Deload-week volume cut |
+| `psych.deload_intensity_reduction_pct` | 30 | Deload-week intensity cut |
+
+`game_settings.value` column widened to `TEXT` in
+`Version20260419200000` so the adapter matrix JSON fits.
+
+#### V2 red lines (unchanged from v1)
+
+- `BattleResultCalculator` **remains untouched** — no changes to
+  damage or HP math.
+- No WEARY/SCATTERED XP penalty ever (multipliers still capped at
+  [0.85, 1.20]; WEARY/SCATTERED stay at 1.0).
+- Q4 and bonus stack **multiplicatively** but only after the status
+  multiplier; net effect is never worse than baseline.
+

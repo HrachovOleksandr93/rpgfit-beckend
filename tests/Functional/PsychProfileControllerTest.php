@@ -138,6 +138,32 @@ class PsychProfileControllerTest extends AbstractFunctionalTest
         $_ENV[PsychProfileController::ENV_FLAG] = $original;
     }
 
+    private function setV2Flag(bool $enabled): ?string
+    {
+        $original = $_SERVER[PsychProfileController::ENV_FLAG_V2]
+            ?? $_ENV[PsychProfileController::ENV_FLAG_V2]
+            ?? null;
+        $value = $enabled ? 'true' : 'false';
+        $_SERVER[PsychProfileController::ENV_FLAG_V2] = $value;
+        $_ENV[PsychProfileController::ENV_FLAG_V2] = $value;
+
+        return is_string($original) ? $original : null;
+    }
+
+    private function restoreV2Flag(?string $original): void
+    {
+        if ($original === null) {
+            unset(
+                $_SERVER[PsychProfileController::ENV_FLAG_V2],
+                $_ENV[PsychProfileController::ENV_FLAG_V2],
+            );
+
+            return;
+        }
+        $_SERVER[PsychProfileController::ENV_FLAG_V2] = $original;
+        $_ENV[PsychProfileController::ENV_FLAG_V2] = $original;
+    }
+
     public function testFeatureFlagOffReturns404(): void
     {
         $this->createTestUser();
@@ -246,6 +272,155 @@ class PsychProfileControllerTest extends AbstractFunctionalTest
             self::assertSame(400, $this->client->getResponse()->getStatusCode());
         } finally {
             $this->restoreFlag($original);
+        }
+    }
+
+    // =====================================================================
+    // Psych v2 (spec 2026-04-19 §2.4)
+    // =====================================================================
+
+    public function testPhysicalStateEndpoint404WhenV2FlagOff(): void
+    {
+        $this->createTestUser();
+        $v1 = $this->setFlag(true);
+        $v2 = $this->setV2Flag(false);
+
+        try {
+            $token = $this->getToken();
+            $this->client->request(
+                'POST',
+                '/api/psych/physical-state',
+                [],
+                [],
+                $this->authHeaders($token),
+                (string) json_encode(['rpeScore' => 3]),
+            );
+            self::assertSame(404, $this->client->getResponse()->getStatusCode());
+        } finally {
+            $this->restoreV2Flag($v2);
+            $this->restoreFlag($v1);
+        }
+    }
+
+    public function testPhysicalStateAcceptsValidRpe(): void
+    {
+        $this->createTestUser();
+        $v1 = $this->setFlag(true);
+        $v2 = $this->setV2Flag(true);
+
+        try {
+            $token = $this->getToken();
+            $this->client->request(
+                'POST',
+                '/api/psych/physical-state',
+                [],
+                [],
+                $this->authHeaders($token),
+                (string) json_encode(['rpeScore' => 4]),
+            );
+
+            self::assertSame(201, $this->client->getResponse()->getStatusCode());
+            $body = json_decode((string) $this->client->getResponse()->getContent(), true);
+            self::assertSame(4, $body['rpeScore']);
+            self::assertArrayHasKey('id', $body);
+        } finally {
+            $this->restoreV2Flag($v2);
+            $this->restoreFlag($v1);
+        }
+    }
+
+    public function testPhysicalStateRejectsOutOfRangeRpe(): void
+    {
+        $this->createTestUser();
+        $v1 = $this->setFlag(true);
+        $v2 = $this->setV2Flag(true);
+
+        try {
+            $token = $this->getToken();
+            $this->client->request(
+                'POST',
+                '/api/psych/physical-state',
+                [],
+                [],
+                $this->authHeaders($token),
+                (string) json_encode(['rpeScore' => 9]),
+            );
+            self::assertSame(400, $this->client->getResponse()->getStatusCode());
+        } finally {
+            $this->restoreV2Flag($v2);
+            $this->restoreFlag($v1);
+        }
+    }
+
+    public function testDeloadSuggestionReturnsShapeWhenV2On(): void
+    {
+        $this->createTestUser();
+        $v1 = $this->setFlag(true);
+        $v2 = $this->setV2Flag(true);
+
+        try {
+            $token = $this->getToken();
+            $this->client->request('GET', '/api/psych/deload-suggestion', [], [], $this->authHeaders($token));
+
+            self::assertSame(200, $this->client->getResponse()->getStatusCode());
+            $body = json_decode((string) $this->client->getResponse()->getContent(), true);
+            self::assertArrayHasKey('showCard', $body);
+            self::assertArrayHasKey('streakDays', $body);
+            self::assertArrayHasKey('recommendedPlan', $body);
+            self::assertFalse($body['showCard']);
+            self::assertSame(0, $body['streakDays']);
+        } finally {
+            $this->restoreV2Flag($v2);
+            $this->restoreFlag($v1);
+        }
+    }
+
+    public function testDeloadSuggestion404WhenV2FlagOff(): void
+    {
+        $this->createTestUser();
+        $v1 = $this->setFlag(true);
+        $v2 = $this->setV2Flag(false);
+
+        try {
+            $token = $this->getToken();
+            $this->client->request('GET', '/api/psych/deload-suggestion', [], [], $this->authHeaders($token));
+            self::assertSame(404, $this->client->getResponse()->getStatusCode());
+        } finally {
+            $this->restoreV2Flag($v2);
+            $this->restoreFlag($v1);
+        }
+    }
+
+    public function testCheckInAcceptsOptionalRpeWhenV2On(): void
+    {
+        $this->createTestUser();
+        $v1 = $this->setFlag(true);
+        $v2 = $this->setV2Flag(true);
+
+        try {
+            $token = $this->getToken();
+            $headers = $this->authHeaders($token);
+
+            $this->client->request('POST', '/api/psych/opt-in', [], [], $headers);
+            $this->client->request(
+                'POST',
+                '/api/psych/check-in',
+                [],
+                [],
+                $headers,
+                (string) json_encode([
+                    'mood' => 'NEUTRAL',
+                    'energy' => 3,
+                    'intent' => 'MAINTAIN',
+                    'skipped' => false,
+                    'rpeScore' => 2,
+                ]),
+            );
+
+            self::assertSame(201, $this->client->getResponse()->getStatusCode());
+        } finally {
+            $this->restoreV2Flag($v2);
+            $this->restoreFlag($v1);
         }
     }
 }

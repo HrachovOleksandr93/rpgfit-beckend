@@ -63,6 +63,15 @@ class PsychCheckIn
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
+    /**
+     * Optional link to the PhysicalStateAnswer (Q4 / session-RPE) merged
+     * into this daily check-in (Psych v2 §2.1). Nullable because Q4 only
+     * appears when a workout was completed in the 2h window.
+     */
+    #[ORM\ManyToOne(targetEntity: PhysicalStateAnswer::class)]
+    #[ORM\JoinColumn(name: 'physical_state_answer_id', nullable: true, onDelete: 'SET NULL')]
+    private ?PhysicalStateAnswer $physicalStateAnswer = null;
+
     public function __construct()
     {
         $this->id = Uuid::v4();
@@ -166,6 +175,18 @@ class PsychCheckIn
     public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getPhysicalStateAnswer(): ?PhysicalStateAnswer
+    {
+        return $this->physicalStateAnswer;
+    }
+
+    public function setPhysicalStateAnswer(?PhysicalStateAnswer $answer): self
+    {
+        $this->physicalStateAnswer = $answer;
 
         return $this;
     }

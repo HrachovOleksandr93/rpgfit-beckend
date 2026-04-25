@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Application\Workout\Service;
 
+use App\Application\PsychProfile\DTO\WorkoutPlanAdaptation;
+use App\Application\PsychProfile\Service\PsychWorkoutAdapterService;
+use App\Application\Workout\DTO\WorkoutPlanGenerationResult;
 use App\Domain\Config\Entity\GameSetting;
 use App\Domain\Training\Entity\WorkoutLog;
 use App\Domain\User\Entity\User;
@@ -100,6 +103,7 @@ final class WorkoutPlanGeneratorService
         private readonly UserTrainingPreferenceRepository $trainingPreferenceRepository,
         private readonly WorkoutLogRepository $workoutLogRepository,
         private readonly WorkoutSessionRepository $workoutSessionRepository,
+        private readonly ?PsychWorkoutAdapterService $psychWorkoutAdapter = null,
     ) {
     }
 
@@ -143,7 +147,79 @@ final class WorkoutPlanGeneratorService
             $plan->setDifficultyModifier($difficultyModifier);
         }
 
+        // Psych v2 (spec §1.3) — apply the adapter deltas on top of the
+        // baseline plan. When the feature is off or the user has no
+        // profile, adapt() returns a zero-delta baseline adaptation.
+        $this->applyPsychAdaptation($user, $plan);
+
         return $plan;
+    }
+
+    /**
+     * Same as generatePlan() but returns the adaptation alongside the plan,
+     * so the controller can surface `warningCopy` (spec §1.4) to the client.
+     */
+    public function generatePlanWithAdaptation(
+        User $user,
+        ?string $activityCategory = null,
+        ?\DateTimeImmutable $date = null,
+    ): WorkoutPlanGenerationResult {
+        $plan = $this->generatePlan($user, $activityCategory, $date);
+        $adaptation = $this->psychWorkoutAdapter?->adapt($user) ?? WorkoutPlanAdaptation::baseline();
+
+        return new WorkoutPlanGenerationResult($plan, $adaptation);
+    }
+
+    /**
+     * Compute and apply the psych adaptation deltas to an already-persisted
+     * plan. Reduces or raises load on top of whatever the category-specific
+     * generator produced. Flushes the plan change.
+     */
+    public function applyPsychAdaptation(User $user, WorkoutPlan $plan): WorkoutPlanAdaptation
+    {
+        if ($this->psychWorkoutAdapter === null) {
+            return WorkoutPlanAdaptation::baseline();
+        }
+
+        $adaptation = $this->psychWorkoutAdapter->adapt($user);
+        $this->applyAdaptationToPlan($plan, $adaptation);
+        $this->entityManager->flush();
+
+        return $adaptation;
+    }
+
+    /**
+     * Apply a precomputed adaptation to the plan's mutable fields. Kept
+     * pure so tests can verify the math without touching the adapter.
+     */
+    private function applyAdaptationToPlan(WorkoutPlan $plan, WorkoutPlanAdaptation $adaptation): void
+    {
+        // Compose with any existing difficulty modifier (e.g. failed-last-session).
+        $intensityScale = 1.0 + $adaptation->intensityDelta;
+        if ($intensityScale !== 1.0) {
+            $plan->setDifficultyModifier(
+                max(0.1, round($plan->getDifficultyModifier() * $intensityScale, 3)),
+            );
+        }
+
+        // Volume delta scales the number of sets on each exercise.
+        $volumeScale = 1.0 + $adaptation->volumeDelta;
+        if ($volumeScale !== 1.0) {
+            foreach ($plan->getExercises() as $planExercise) {
+                $originalSets = $planExercise->getSets();
+                if ($originalSets <= 0) {
+                    continue;
+                }
+                $scaled = (int) max(1, round($originalSets * $volumeScale));
+                $planExercise->setSets($scaled);
+            }
+        }
+
+        // Duration delta scales targetDuration for time-based activities.
+        $durationScale = 1.0 + $adaptation->durationDelta;
+        if ($durationScale !== 1.0 && $plan->getTargetDuration() !== null) {
+            $plan->setTargetDuration(max(5, (int) round($plan->getTargetDuration() * $durationScale)));
+        }
     }
 
     /**

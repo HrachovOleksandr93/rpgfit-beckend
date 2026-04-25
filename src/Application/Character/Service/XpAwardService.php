@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Character\Service;
 
+use App\Application\PsychProfile\Service\CompletionBonusService;
 use App\Application\PsychProfile\Service\PsychStatusModifierService;
 use App\Domain\Character\Entity\CharacterStats;
 use App\Domain\Character\Entity\ExperienceLog;
@@ -18,6 +19,13 @@ use App\Infrastructure\Character\Repository\ExperienceLogRepository;
  * Application layer (Character bounded context). Called after a health data sync
  * to translate the synced health metrics into XP, persist the award in ExperienceLog,
  * update the cached totalXp/level on CharacterStats, and report whether a level-up occurred.
+ *
+ * Psych v2 (spec 2026-04-19): after the status multiplier runs, the
+ * CompletionBonusService applies a +10% multiplicative bonus when the
+ * user has a completion-bonus eligibility marker for today. The bonus
+ * stacks on top of the status multiplier (e.g. CHARGED x1.15 x 1.10 =
+ * 1.265 effective). Weekly cap of 5/7 days is enforced inside the bonus
+ * service itself.
  */
 final class XpAwardService
 {
@@ -27,6 +35,7 @@ final class XpAwardService
         private readonly ExperienceLogRepository $experienceLogRepository,
         private readonly CharacterStatsRepository $characterStatsRepository,
         private readonly PsychStatusModifierService $psychModifier,
+        private readonly ?CompletionBonusService $completionBonusService = null,
     ) {
     }
 
@@ -51,6 +60,15 @@ final class XpAwardService
             $xpAwarded = (int) round($xpAwarded * $multiplier);
         }
 
+        // Psych v2: apply completion XP bonus if the user answered a full
+        // daily check-in today. Stacks multiplicatively AFTER status.
+        $xpBeforeBonus = $xpAwarded;
+        if ($this->completionBonusService !== null) {
+            $today = (new \DateTimeImmutable())->setTime(0, 0, 0);
+            $xpAwarded = $this->completionBonusService->applyIfEligible($user, $today, $xpAwarded);
+        }
+        $bonusFired = $xpAwarded !== $xpBeforeBonus;
+
         if ($xpAwarded <= 0) {
             $stats = $this->getOrCreateStats($user);
 
@@ -68,10 +86,20 @@ final class XpAwardService
         $log->setUser($user);
         $log->setAmount($xpAwarded);
         $log->setSource('health_sync');
-        $log->setDescription(sprintf(
-            'XP from health data sync (psych ×%.2f)',
-            $multiplier,
-        ));
+        if ($bonusFired) {
+            $bonusPct = $this->completionBonusService?->getBonusPct() ?? 0;
+            $bonusMul = 1.0 + ($bonusPct / 100.0);
+            $log->setDescription(sprintf(
+                'XP from health data sync (psych ×%.2f ×%.2f bonus)',
+                $multiplier,
+                $bonusMul,
+            ));
+        } else {
+            $log->setDescription(sprintf(
+                'XP from health data sync (psych ×%.2f)',
+                $multiplier,
+            ));
+        }
         $this->experienceLogRepository->save($log);
 
         // Update character stats

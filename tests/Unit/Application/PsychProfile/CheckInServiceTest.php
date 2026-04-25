@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Unit\Application\PsychProfile;
 
 use App\Application\PsychProfile\Service\CheckInService;
+use App\Application\PsychProfile\Service\CompletionBonusService;
+use App\Application\PsychProfile\Service\PhysicalStateService;
 use App\Application\PsychProfile\Service\StatusAssignmentService;
+use App\Domain\PsychProfile\Entity\PhysicalStateAnswer;
 use App\Domain\PsychProfile\Entity\PsychCheckIn;
 use App\Domain\PsychProfile\Entity\PsychUserProfile;
 use App\Domain\PsychProfile\Enum\MoodQuadrant;
@@ -175,5 +178,154 @@ final class CheckInServiceTest extends TestCase
         );
 
         self::assertSame($existing, $service->checkIn($user, null, null, null, true));
+    }
+
+    // =====================================================================
+    // Psych v2 (spec 2026-04-19) — Q4 merge + completion bonus eligibility
+    // =====================================================================
+
+    public function testRpeScoreProvidedRecordsFreshAnswerAndLinksIt(): void
+    {
+        $user = $this->makeUser();
+        $profile = $this->makeProfile(PsychStatus::STEADY, 0);
+
+        $answer = new PhysicalStateAnswer();
+        $answer->setUser($user)->setRpeScore(3);
+
+        $assignment = $this->createMock(StatusAssignmentService::class);
+        $assignment->method('assign')->willReturn(PsychStatus::STEADY);
+
+        $checkInRepo = $this->createMock(PsychCheckInRepository::class);
+        $checkInRepo->method('findForUserOnDate')->willReturn(null);
+
+        $profileRepo = $this->createMock(PsychUserProfileRepository::class);
+        $profileRepo->method('findOrCreateForUser')->willReturn($profile);
+
+        $physical = $this->createMock(PhysicalStateService::class);
+        $physical->expects(self::once())
+            ->method('record')
+            ->with($user, null, 3)
+            ->willReturn($answer);
+        $physical->expects(self::never())->method('getLatestInWindow');
+
+        $bonus = $this->createMock(CompletionBonusService::class);
+        $bonus->expects(self::once())->method('markEligibility')->with($user);
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->method('persist');
+        $em->method('flush');
+
+        $service = new CheckInService(
+            $assignment,
+            $checkInRepo,
+            $profileRepo,
+            $em,
+            new NullLogger(),
+            $physical,
+            $bonus,
+        );
+
+        $checkIn = $service->checkIn(
+            $user,
+            MoodQuadrant::NEUTRAL,
+            3,
+            UserIntent::MAINTAIN,
+            false,
+            3,
+        );
+
+        self::assertSame($answer, $checkIn->getPhysicalStateAnswer());
+    }
+
+    public function testNoRpeButRecentAnswerInWindowIsMerged(): void
+    {
+        $user = $this->makeUser();
+        $profile = $this->makeProfile(PsychStatus::STEADY, 0);
+
+        $answer = new PhysicalStateAnswer();
+        $answer->setUser($user)->setRpeScore(4);
+
+        $assignment = $this->createMock(StatusAssignmentService::class);
+        $assignment->method('assign')->willReturn(PsychStatus::STEADY);
+
+        $checkInRepo = $this->createMock(PsychCheckInRepository::class);
+        $checkInRepo->method('findForUserOnDate')->willReturn(null);
+
+        $profileRepo = $this->createMock(PsychUserProfileRepository::class);
+        $profileRepo->method('findOrCreateForUser')->willReturn($profile);
+
+        $physical = $this->createMock(PhysicalStateService::class);
+        $physical->expects(self::never())->method('record');
+        $physical->expects(self::once())
+            ->method('getLatestInWindow')
+            ->willReturn($answer);
+
+        $bonus = $this->createMock(CompletionBonusService::class);
+        $bonus->expects(self::once())->method('markEligibility');
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->method('persist');
+        $em->method('flush');
+
+        $service = new CheckInService(
+            $assignment,
+            $checkInRepo,
+            $profileRepo,
+            $em,
+            new NullLogger(),
+            $physical,
+            $bonus,
+        );
+
+        $checkIn = $service->checkIn(
+            $user,
+            MoodQuadrant::AT_EASE,
+            3,
+            UserIntent::MAINTAIN,
+            false,
+            null,
+        );
+
+        self::assertSame($answer, $checkIn->getPhysicalStateAnswer());
+    }
+
+    public function testSkippedCheckInDoesNotTriggerBonusOrQ4Lookup(): void
+    {
+        $user = $this->makeUser();
+        $profile = $this->makeProfile(PsychStatus::STEADY, 0);
+
+        $assignment = $this->createMock(StatusAssignmentService::class);
+
+        $checkInRepo = $this->createMock(PsychCheckInRepository::class);
+        $checkInRepo->method('findForUserOnDate')->willReturn(null);
+
+        $profileRepo = $this->createMock(PsychUserProfileRepository::class);
+        $profileRepo->method('findOrCreateForUser')->willReturn($profile);
+
+        $physical = $this->createMock(PhysicalStateService::class);
+        $physical->expects(self::never())->method('record');
+        $physical->expects(self::never())->method('getLatestInWindow');
+
+        $bonus = $this->createMock(CompletionBonusService::class);
+        $bonus->expects(self::never())->method('markEligibility');
+
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->method('persist');
+        $em->method('flush');
+
+        $service = new CheckInService(
+            $assignment,
+            $checkInRepo,
+            $profileRepo,
+            $em,
+            new NullLogger(),
+            $physical,
+            $bonus,
+        );
+
+        $checkIn = $service->checkIn($user, null, null, null, true, null);
+
+        self::assertNull($checkIn->getPhysicalStateAnswer());
+        self::assertTrue($checkIn->isSkipped());
     }
 }

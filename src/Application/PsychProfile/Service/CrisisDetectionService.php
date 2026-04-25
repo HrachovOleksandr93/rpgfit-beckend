@@ -178,4 +178,46 @@ final class CrisisDetectionService
 
         $this->entityManager->flush();
     }
+
+    /**
+     * Psych v2 (spec §1.5): consecutive days — ending with today — where
+     * the user's assigned status was WEARY or SCATTERED. A gap (any other
+     * status or a missing day) breaks the streak.
+     *
+     * Walks from today backwards up to 30 days. Skipped rows inherit the
+     * prior status at CheckInService, so a skip-chain of WEARY days still
+     * counts for the streak — this matches the clinical intent of "you
+     * keep feeling heavy for N days".
+     */
+    public function getWearyStreakDays(User $user): int
+    {
+        $today = (new \DateTimeImmutable())->setTime(0, 0, 0);
+        $start = $today->modify('-29 day');
+
+        $rows = $this->checkInRepository->findInRange($user, $start, $today);
+
+        // Index by date so the walk below is O(days) not O(rows).
+        $byDate = [];
+        foreach ($rows as $row) {
+            $byDate[$row->getCheckedInOn()->format('Y-m-d')] = $row;
+        }
+
+        $streak = 0;
+        for ($i = 0; $i < 30; ++$i) {
+            $day = $today->modify(sprintf('-%d day', $i));
+            $key = $day->format('Y-m-d');
+            if (!isset($byDate[$key])) {
+                break;
+            }
+
+            $status = $byDate[$key]->getAssignedStatus();
+            if ($status !== PsychStatus::WEARY && $status !== PsychStatus::SCATTERED) {
+                break;
+            }
+
+            ++$streak;
+        }
+
+        return $streak;
+    }
 }

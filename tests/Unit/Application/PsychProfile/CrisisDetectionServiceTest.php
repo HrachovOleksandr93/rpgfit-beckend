@@ -214,4 +214,100 @@ final class CrisisDetectionServiceTest extends TestCase
         $service = new CrisisDetectionService($checkIns, $settings, $em, $logger);
         self::assertFalse($service->hasCrisisPattern($user));
     }
+
+    // =====================================================================
+    // Psych v2 (spec §1.5) — getWearyStreakDays
+    // =====================================================================
+
+    public function testWearyStreakReturnsZeroWhenNoRowsToday(): void
+    {
+        $user = $this->makeUser(Uuid::v4());
+        $checkIns = $this->createMock(PsychCheckInRepository::class);
+        $checkIns->method('findInRange')->willReturn([]);
+
+        $service = new CrisisDetectionService(
+            $checkIns,
+            $this->createMock(GameSettingRepository::class),
+            $this->createMock(EntityManagerInterface::class),
+            $this->createMock(LoggerInterface::class),
+        );
+
+        self::assertSame(0, $service->getWearyStreakDays($user));
+    }
+
+    public function testWearyStreakCountsConsecutiveDaysOfWearyOrScattered(): void
+    {
+        $user = $this->makeUser(Uuid::v4());
+
+        $rows = [
+            $this->makeRow(PsychStatus::WEARY, 4),
+            $this->makeRow(PsychStatus::SCATTERED, 3),
+            $this->makeRow(PsychStatus::WEARY, 2),
+            $this->makeRow(PsychStatus::WEARY, 1),
+            $this->makeRow(PsychStatus::WEARY, 0),
+        ];
+
+        $checkIns = $this->createMock(PsychCheckInRepository::class);
+        $checkIns->method('findInRange')->willReturn($rows);
+
+        $service = new CrisisDetectionService(
+            $checkIns,
+            $this->createMock(GameSettingRepository::class),
+            $this->createMock(EntityManagerInterface::class),
+            $this->createMock(LoggerInterface::class),
+        );
+
+        self::assertSame(5, $service->getWearyStreakDays($user));
+    }
+
+    public function testWearyStreakBreaksOnNonCrisisDay(): void
+    {
+        $user = $this->makeUser(Uuid::v4());
+
+        $rows = [
+            // 4 days ago was STEADY — streak should never reach that far.
+            $this->makeRow(PsychStatus::STEADY, 4),
+            // But today and the prior 3 days are WEARY → streak = 4.
+            $this->makeRow(PsychStatus::WEARY, 3),
+            $this->makeRow(PsychStatus::WEARY, 2),
+            $this->makeRow(PsychStatus::WEARY, 1),
+            $this->makeRow(PsychStatus::WEARY, 0),
+        ];
+
+        $checkIns = $this->createMock(PsychCheckInRepository::class);
+        $checkIns->method('findInRange')->willReturn($rows);
+
+        $service = new CrisisDetectionService(
+            $checkIns,
+            $this->createMock(GameSettingRepository::class),
+            $this->createMock(EntityManagerInterface::class),
+            $this->createMock(LoggerInterface::class),
+        );
+
+        self::assertSame(4, $service->getWearyStreakDays($user));
+    }
+
+    public function testWearyStreakBreaksOnMissingDay(): void
+    {
+        $user = $this->makeUser(Uuid::v4());
+
+        // Gap at day 2 — streak only counts today + day 1.
+        $rows = [
+            $this->makeRow(PsychStatus::WEARY, 3),
+            $this->makeRow(PsychStatus::WEARY, 1),
+            $this->makeRow(PsychStatus::WEARY, 0),
+        ];
+
+        $checkIns = $this->createMock(PsychCheckInRepository::class);
+        $checkIns->method('findInRange')->willReturn($rows);
+
+        $service = new CrisisDetectionService(
+            $checkIns,
+            $this->createMock(GameSettingRepository::class),
+            $this->createMock(EntityManagerInterface::class),
+            $this->createMock(LoggerInterface::class),
+        );
+
+        self::assertSame(2, $service->getWearyStreakDays($user));
+    }
 }

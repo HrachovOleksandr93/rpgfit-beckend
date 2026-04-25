@@ -37,8 +37,13 @@ class GameSetting
     #[ORM\Column(name: '`key`', type: 'string', length: 100, unique: true)]
     private string $key;
 
-    /** Raw string value (cast to int/float by the consuming service). */
-    #[ORM\Column(type: 'string', length: 2048)]
+    /**
+     * Raw string value (cast to int/float by the consuming service).
+     *
+     * Widened to TEXT by Psych v2 migration (2026-04-19) to fit the
+     * `psych.adapter_matrix` JSON blob and other future JSON settings.
+     */
+    #[ORM\Column(type: 'text')]
     private string $value;
 
     /** Human-readable explanation of what this setting controls. */

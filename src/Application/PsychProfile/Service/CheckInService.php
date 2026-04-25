@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\PsychProfile\Service;
 
+use App\Domain\PsychProfile\Entity\PhysicalStateAnswer;
 use App\Domain\PsychProfile\Entity\PsychCheckIn;
 use App\Domain\PsychProfile\Entity\PsychUserProfile;
 use App\Domain\PsychProfile\Enum\MoodQuadrant;
@@ -31,6 +32,15 @@ use Psr\Log\LoggerInterface;
  *    is forced to STEADY, regardless of previous history. The 5% per-skip
  *    decay described in the spec is folded into this deterministic
  *    counter-based rule for beta predictability — revisit post-beta.
+ *
+ * Psych v2 additions (spec 2026-04-19):
+ *  - Accepts an optional session-RPE (`$rpeScore`). When provided, the
+ *    Q4 row is either recorded inline OR the most recent Q4 row written
+ *    in the 2h merge window is attached to this check-in.
+ *  - A "full" check-in (mood + energy + intent + Q4) sets a completion
+ *    bonus eligibility marker via CompletionBonusService for today.
+ *  - When no workout happened today, Q4 is OPTIONAL — a Q1-Q3 answer
+ *    still counts as "full" for the bonus.
  */
 final class CheckInService
 {
@@ -43,6 +53,8 @@ final class CheckInService
         private readonly PsychUserProfileRepository $profileRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly LoggerInterface $logger,
+        private readonly ?PhysicalStateService $physicalStateService = null,
+        private readonly ?CompletionBonusService $completionBonusService = null,
     ) {
     }
 
@@ -52,6 +64,7 @@ final class CheckInService
         ?int $energy,
         ?UserIntent $intent,
         bool $skipped,
+        ?int $rpeScore = null,
     ): PsychCheckIn {
         $now = new \DateTimeImmutable();
         $today = $now->setTime(0, 0, 0);
@@ -76,6 +89,13 @@ final class CheckInService
             ->setSkipped($skipped)
             ->setCheckedInOn($today);
 
+        // Psych v2: attach a Q4 answer — either a fresh row recorded
+        // here, or the most recent row in the 2h merge window.
+        $q4 = $this->resolveQ4($user, $skipped, $rpeScore);
+        if ($q4 !== null) {
+            $checkIn->setPhysicalStateAnswer($q4);
+        }
+
         $profile->setCurrentStatus($status)
             ->setStatusValidUntil($today->modify('+1 day'))
             ->setConsecutiveSkips($consecutiveSkips)
@@ -85,14 +105,48 @@ final class CheckInService
         $this->entityManager->persist($profile);
         $this->entityManager->flush();
 
+        // Psych v2: mark completion-bonus eligibility when Q1-Q3 are all
+        // answered (non-skip). Q4 is optional — spec §1.1 treats Q1-Q3 as
+        // sufficient on a non-workout day.
+        if (!$skipped && $mood !== null && $energy !== null && $intent !== null) {
+            $this->completionBonusService?->markEligibility($user, $today);
+        }
+
         $this->logger->info('psych.check-in', [
             'userId' => $user->getId()->toRfc4122(),
             'status' => $status->value,
             'skipped' => $skipped,
             'consecutiveSkips' => $consecutiveSkips,
+            'hasRpe' => $q4 !== null,
         ]);
 
         return $checkIn;
+    }
+
+    /**
+     * Decide which Q4 answer (if any) to link to the new check-in.
+     *
+     * - When $rpeScore is provided AND the check-in is not skipped,
+     *   record a fresh PhysicalStateAnswer inline so there is always
+     *   exactly one authoritative Q4 for this check-in.
+     * - Otherwise, fall back to the most recent Q4 in the 2h window so
+     *   a post-workout answer submitted seconds ago is still merged.
+     */
+    private function resolveQ4(User $user, bool $skipped, ?int $rpeScore): ?PhysicalStateAnswer
+    {
+        if ($this->physicalStateService === null) {
+            return null;
+        }
+
+        if (!$skipped && $rpeScore !== null) {
+            return $this->physicalStateService->record($user, null, $rpeScore);
+        }
+
+        if ($skipped) {
+            return null;
+        }
+
+        return $this->physicalStateService->getLatestInWindow($user);
     }
 
     /**
